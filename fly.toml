@@ -1,23 +1,19 @@
-# fly.toml app configuration file generated for solar-storm-backend on 2026-03-29T14:09:06+03:00
+# fly.toml app configuration file generated for tua-hackathon on 2026-03-29T12:36:46Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'solar-storm-backend'
-primary_region = 'ord'
+app = 'tua-hackathon'
+primary_region = 'fra'
 
 [build]
-  dockerfile = 'backend/Dockerfile'
-
-[env]
-  PYTHONUNBUFFERED = '1'
 
 [http_service]
-  internal_port = 5000
+  internal_port = 8080
   force_https = true
   auto_stop_machines = 'stop'
   auto_start_machines = true
-  min_machines_running = 1
+  min_machines_running = 0
   processes = ['app']
 
 [[vm]]
