@@ -1,0 +1,22 @@
+# flyctl launch added from .gitignore
+# Virtual Environment
+**/venv
+**/env
+**/.env
+
+# Python caching
+**/__pycache__
+**/*.pyc
+**/*.pyo
+
+# Local Data files (to prevent committing huge data files / hitting HAPI bounds)
+**/data.json
+**/backend/data.json
+**/data_test.json
+**/preprocessed_data.csv
+**/preprocessed_data_test.csv
+
+# flyctl launch added from backend/venv/.gitignore
+# Created by venv; see https://docs.python.org/3/library/venv.html
+backend/venv/**/*
+fly.toml

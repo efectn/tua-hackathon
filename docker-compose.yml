@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: . # Use root context to mount global data like data.json properly
+      dockerfile: backend/Dockerfile
+    container_name: solar-storm-backend
+    ports:
+      - "5000:5000"
+    volumes:
+      # Mount the whole project so development changes are reflected inside the container
+      - .:/app
+    environment:
+      - FLASK_ENV=development
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
