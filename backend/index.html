@@ -1,0 +1,2736 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KUARA // Güneş Fırtınası Erken Uyarı Sistemi</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Exo+2:wght@200;300;400;600;700;900&family=JetBrains+Mono:wght@300;400;600;700&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/satellite.js/4.1.3/satellite.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <style>
+    :root {
+      --bg: #000000;
+      --bg1: #060d14;
+      --bg2: #0a1320;
+      --bd: #0f2035;
+      --bd2: #1a3356;
+      --cyan: #00e5ff;
+      --cyan2: #0097a7;
+      --cg: rgba(0, 229, 255, .1);
+      --red: #ff1744;
+      --red2: #7f0000;
+      --rg: rgba(255, 23, 68, .12);
+      --amber: #ffab00;
+      --amb2: #e65100;
+      --ag: rgba(255, 171, 0, .1);
+      --green: #00e676;
+      --grn2: #1b5e20;
+      --txt: #ddeeff;
+      --txt2: #5a7fa0;
+      --txt3: #253850;
+      --mono: 'JetBrains Mono', monospace;
+      --head: 'Exo 2', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+      font-family: var(--head);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--txt);
+      display: flex;
+      flex-direction: column;
+    }
+
+    ::-webkit-scrollbar {
+      width: 3px;
+      height: 3px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--bd2);
+      border-radius: 2px;
+    }
+
+    /* HEADER */
+    .hdr {
+      flex-shrink: 0;
+      height: 50px;
+      background: rgba(2, 6, 9, .98);
+      border-bottom: 1px solid var(--bd);
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 12px;
+      position: relative;
+      z-index: 100
+    }
+
+    .hdr::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan2), var(--amb2), transparent);
+      opacity: .3
+    }
+
+    .logo-sun {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: radial-gradient(circle at 35% 35%, #fffde7, #ffd600 30%, #ff6d00 65%, #b71c1c);
+      box-shadow: 0 0 14px rgba(255, 109, 0, .7), 0 0 30px rgba(255, 60, 0, .3);
+      animation: spulse 3s ease-in-out infinite
+    }
+
+    @keyframes spulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 14px rgba(255, 109, 0, .7), 0 0 30px rgba(255, 60, 0, .3)
+      }
+
+      50% {
+        box-shadow: 0 0 24px rgba(255, 140, 0, 1), 0 0 50px rgba(255, 80, 0, .5)
+      }
+    }
+
+    .logo-name {
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 7px;
+      color: var(--cyan);
+      text-shadow: 0 0 20px rgba(0, 229, 255, .5)
+    }
+
+    .logo-sub {
+      font-size: 8px;
+      letter-spacing: 3px;
+      color: var(--txt2);
+      font-weight: 300;
+      text-transform: uppercase;
+      margin-top: 1px
+    }
+
+    .hsep {
+      width: 1px;
+      height: 26px;
+      background: var(--bd);
+      flex-shrink: 0
+    }
+
+    .hclk {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--txt2);
+      white-space: nowrap
+    }
+
+    .hclk span {
+      color: var(--cyan)
+    }
+
+    .hst {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 11px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      white-space: nowrap
+    }
+
+    .hst.ok {
+      background: rgba(0, 230, 118, .08);
+      border: 1px solid var(--grn2);
+      color: var(--green)
+    }
+
+    .hst.watch {
+      background: var(--ag);
+      border: 1px solid var(--amb2);
+      color: var(--amber)
+    }
+
+    .hst.alert {
+      background: var(--rg);
+      border: 1px solid var(--red2);
+      color: var(--red);
+      animation: balrt .9s ease-in-out infinite
+    }
+
+    @keyframes balrt {
+
+      0%,
+      100% {
+        border-color: var(--red2)
+      }
+
+      50% {
+        border-color: var(--red);
+        box-shadow: 0 0 10px rgba(255, 23, 68, .4)
+      }
+    }
+
+    .hdot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: bdot 1.5s ease-in-out infinite
+    }
+
+    @keyframes bdot {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .2
+      }
+    }
+
+    .hsp {
+      flex: 1
+    }
+
+    .hnav {
+      display: flex;
+      gap: 2px
+    }
+
+    .hbtn {
+      font-family: var(--head);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: var(--txt2);
+      background: transparent;
+      border: 1px solid transparent;
+      padding: 4px 11px;
+      border-radius: 3px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all .2s
+    }
+
+    .hbtn:hover,
+    .hbtn.active {
+      color: var(--cyan);
+      border-color: var(--bd2);
+      background: var(--cg)
+    }
+
+    /* MAIN */
+    .wrap {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      min-height: 0
+    }
+
+    /* LEFT */
+    .sl {
+      width: 190px;
+      flex-shrink: 0;
+      background: var(--bg1);
+      border-right: 1px solid var(--bd);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden
+    }
+
+    .sl-ttl {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: var(--txt3);
+      text-transform: uppercase;
+      padding: 9px 11px 5px;
+      border-bottom: 1px solid var(--bd)
+    }
+
+    .bzc {
+      padding: 11px;
+      border-bottom: 1px solid var(--bd);
+      background: rgba(255, 23, 68, .04);
+      border-left: 2px solid var(--red)
+    }
+
+    .bzh {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: var(--red);
+      text-transform: uppercase;
+      margin-bottom: 3px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .bztg {
+      font-size: 7px;
+      letter-spacing: 1px;
+      background: var(--rg);
+      border: 1px solid var(--red2);
+      color: var(--red);
+      padding: 1px 4px;
+      border-radius: 2px
+    }
+
+    .bzn {
+      font-family: var(--mono);
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1;
+      transition: color .5s, text-shadow .5s
+    }
+
+    .bzn.neg {
+      color: var(--red);
+      text-shadow: 0 0 25px rgba(255, 23, 68, .6)
+    }
+
+    .bzn.pos {
+      color: var(--green);
+      text-shadow: 0 0 15px rgba(0, 230, 118, .4)
+    }
+
+    .bzn.neu {
+      color: var(--txt);
+      text-shadow: none
+    }
+
+    .bzu {
+      font-family: var(--head);
+      font-size: 9px;
+      color: var(--txt2);
+      margin-top: 1px;
+      font-weight: 300;
+      letter-spacing: 1px
+    }
+
+    .bzsp {
+      display: flex;
+      gap: 1.5px;
+      align-items: flex-end;
+      height: 22px;
+      margin-top: 7px
+    }
+
+    .bzbar {
+      flex: 1;
+      border-radius: 1px 1px 0 0;
+      min-height: 2px;
+      transition: height .3s, background .3s
+    }
+
+    .mc {
+      padding: 9px 11px;
+      border-bottom: 1px solid var(--bd);
+      cursor: default;
+      transition: background .2s
+    }
+
+    .mc:hover {
+      background: rgba(0, 229, 255, .02)
+    }
+
+    .mc.crit {
+      background: rgba(255, 23, 68, .04);
+      border-left: 2px solid var(--red)
+    }
+
+    .mc.warn {
+      background: rgba(255, 171, 0, .03);
+      border-left: 2px solid var(--amber)
+    }
+
+    .mc.good {
+      border-left: 2px solid var(--green)
+    }
+
+    .ml {
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: var(--txt2);
+      text-transform: uppercase;
+      margin-bottom: 4px
+    }
+
+    .mv {
+      font-family: var(--mono);
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--txt);
+      transition: color .5s
+    }
+
+    .mv.crit {
+      color: var(--red);
+      text-shadow: 0 0 18px rgba(255, 23, 68, .5)
+    }
+
+    .mv.warn {
+      color: var(--amber);
+      text-shadow: 0 0 12px rgba(255, 171, 0, .4)
+    }
+
+    .mv.good {
+      color: var(--green)
+    }
+
+    .mv.cyan {
+      color: var(--cyan);
+      text-shadow: 0 0 10px rgba(0, 229, 255, .3)
+    }
+
+    .mu {
+      font-family: var(--head);
+      font-size: 9px;
+      color: var(--txt2);
+      margin-top: 1px;
+      font-weight: 300;
+      letter-spacing: 1px
+    }
+
+    .mtr {
+      font-family: var(--mono);
+      font-size: 8px;
+      color: var(--txt3);
+      margin-top: 3px
+    }
+
+    .mbar {
+      height: 2px;
+      background: var(--bd);
+      border-radius: 1px;
+      margin-top: 6px;
+      overflow: hidden
+    }
+
+    .mfill {
+      height: 100%;
+      border-radius: 1px;
+      transition: width .9s cubic-bezier(.4, 0, .2, 1)
+    }
+
+    .src {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--txt2);
+      line-height: 2;
+      padding: 9px 11px;
+      border-bottom: 1px solid var(--bd)
+    }
+
+    .sdot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin-right: 4px;
+      vertical-align: middle
+    }
+
+    .sdot.live {
+      background: var(--green);
+      box-shadow: 0 0 5px var(--green);
+      animation: bdot 2s ease-in-out infinite
+    }
+
+    .sr2 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--bd);
+      font-size: 11px
+    }
+
+    .sr2:last-child {
+      border-bottom: none
+    }
+
+    .sn2 {
+      color: var(--txt2)
+    }
+
+    .sv2 {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--txt)
+    }
+
+    .sv2.ok {
+      color: var(--green)
+    }
+
+    .sv2.warn {
+      color: var(--amber)
+    }
+
+    .sv2.crit {
+      color: var(--red)
+    }
+
+    /* CENTER */
+    .c3d {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: #000000;
+      min-width: 0
+    }
+
+    #ec {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: grab
+    }
+
+    #ec:active {
+      cursor: grabbing
+    }
+
+    .hud {
+      position: absolute;
+      pointer-events: none
+    }
+
+    .hudtl {
+      top: 11px;
+      left: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px
+    }
+
+    .hudtr {
+      top: 11px;
+      right: 11px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px
+    }
+
+    .hudbl {
+      bottom: 76px;
+      left: 11px
+    }
+
+    .hchip {
+      background: rgba(2, 6, 9, .88);
+      border: 1px solid var(--bd2);
+      border-radius: 3px;
+      padding: 4px 9px;
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--txt2);
+      backdrop-filter: blur(6px);
+      white-space: nowrap
+    }
+
+    .hchip strong {
+      color: var(--cyan)
+    }
+
+    .hchip.warn strong {
+      color: var(--amber)
+    }
+
+    .hchip.crit strong {
+      color: var(--red)
+    }
+
+    .hlbl {
+      font-family: var(--head);
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: var(--txt3);
+      text-transform: uppercase;
+      margin-bottom: 3px
+    }
+
+    #solarSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 13px;
+      height: 13px;
+      background: #00e5ff;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 8px #00e5ff;
+    }
+
+    .kpstrip {
+      position: absolute;
+      bottom: 11px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 3px;
+      align-items: flex-end;
+      background: rgba(2, 6, 9, .85);
+      border: 1px solid var(--bd2);
+      border-radius: 4px;
+      padding: 7px 10px;
+      backdrop-filter: blur(8px)
+    }
+
+    .kpttl {
+      font-family: var(--head);
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: var(--txt2);
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      margin-right: 3px
+    }
+
+    .impleg {
+      position: absolute;
+      right: 11px;
+      bottom: 11px;
+      background: rgba(2, 6, 9, .9);
+      border: 1px solid var(--bd2);
+      border-radius: 4px;
+      padding: 9px 11px;
+      backdrop-filter: blur(8px);
+      min-width: 165px
+    }
+
+    .impttl {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: var(--txt2);
+      text-transform: uppercase;
+      margin-bottom: 7px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .improw {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+      font-size: 9px
+    }
+
+    .impsw {
+      width: 20px;
+      height: 7px;
+      border-radius: 2px;
+      flex-shrink: 0
+    }
+
+    .impnm {
+      color: var(--txt2);
+      flex: 1
+    }
+
+    .implt {
+      font-family: var(--mono);
+      font-size: 8px;
+      color: var(--txt3)
+    }
+
+    /* RIGHT */
+    .sr {
+      width: 268px;
+      flex-shrink: 0;
+      background: var(--bg1);
+      border-left: 1px solid var(--bd);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto
+    }
+
+    .rp {
+      border-bottom: 1px solid var(--bd)
+    }
+
+    .rph {
+      padding: 7px 11px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--bd);
+      background: rgba(255, 255, 255, .01)
+    }
+
+    .rpt {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: var(--txt2);
+      text-transform: uppercase
+    }
+
+    .bdg {
+      font-family: var(--mono);
+      font-size: 8px;
+      padding: 2px 6px;
+      border-radius: 2px;
+      letter-spacing: 1px
+    }
+
+    .blv {
+      background: rgba(0, 230, 118, .1);
+      color: var(--green);
+      border: 1px solid var(--grn2)
+    }
+
+    .bwn {
+      background: var(--ag);
+      color: var(--amber);
+      border: 1px solid var(--amb2)
+    }
+
+    .bcr {
+      background: var(--rg);
+      color: var(--red);
+      border: 1px solid var(--red2)
+    }
+
+    .binf {
+      background: var(--cg);
+      color: var(--cyan);
+      border: 1px solid var(--cyan2)
+    }
+
+    .gsc {
+      display: flex;
+      gap: 3px;
+      padding: 9px 11px
+    }
+
+    .gl {
+      flex: 1;
+      padding: 5px 3px;
+      border-radius: 3px;
+      text-align: center;
+      border: 1px solid var(--bd);
+      background: var(--bg2);
+      transition: all .3s;
+      cursor: default
+    }
+
+    .gl.on {
+      transform: translateY(-2px)
+    }
+
+    .gl:nth-child(1).on {
+      background: rgba(0, 230, 118, .1);
+      border-color: var(--green)
+    }
+
+    .gl:nth-child(2).on {
+      background: rgba(100, 200, 0, .1);
+      border-color: #64c800
+    }
+
+    .gl:nth-child(3).on {
+      background: rgba(255, 171, 0, .1);
+      border-color: var(--amber)
+    }
+
+    .gl:nth-child(4).on {
+      background: rgba(255, 109, 0, .12);
+      border-color: #ff6d00
+    }
+
+    .gl:nth-child(5).on {
+      background: rgba(255, 23, 68, .15);
+      border-color: var(--red);
+      animation: balrt .9s ease-in-out infinite
+    }
+
+    .gl span {
+      font-size: 15px;
+      font-weight: 900;
+      display: block;
+      line-height: 1.2
+    }
+
+    .gl:nth-child(1) span {
+      color: var(--green)
+    }
+
+    .gl:nth-child(2) span {
+      color: #64c800
+    }
+
+    .gl:nth-child(3) span {
+      color: var(--amber)
+    }
+
+    .gl:nth-child(4) span {
+      color: #ff6d00
+    }
+
+    .gl:nth-child(5) span {
+      color: var(--red)
+    }
+
+    .gll {
+      font-size: 6px;
+      letter-spacing: .5px;
+      color: var(--txt3);
+      margin-top: 1px
+    }
+
+    .rows {
+      padding: 0 11px
+    }
+
+    .chw {
+      padding: 9px 11px
+    }
+
+    .chc {
+      height: 85px;
+      position: relative;
+      border-radius: 3px;
+      overflow: hidden;
+      background: #020609
+    }
+
+    .chc canvas {
+      width: 100%;
+      height: 100%;
+      display: block
+    }
+
+    .chleg {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 5px
+    }
+
+    .cli {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--mono);
+      font-size: 8px;
+      color: var(--txt2)
+    }
+
+    .cll {
+      width: 14px;
+      height: 2px;
+      border-radius: 1px
+    }
+
+    .ai {
+      margin: 7px 11px;
+      padding: 7px 9px;
+      border-radius: 3px;
+      border: 1px solid var(--bd);
+      background: var(--bg2);
+      transition: background .2s
+    }
+
+    .ai.crit {
+      border-color: rgba(255, 23, 68, .3);
+      background: rgba(255, 23, 68, .04)
+    }
+
+    .ai.warn {
+      border-color: rgba(255, 171, 0, .3);
+      background: rgba(255, 171, 0, .04)
+    }
+
+    .ait {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      margin-bottom: 2px
+    }
+
+    .ai.crit .ait {
+      color: var(--red)
+    }
+
+    .ai.warn .ait {
+      color: var(--amber)
+    }
+
+    .ai.info .ait {
+      color: var(--cyan)
+    }
+
+    .aid {
+      font-size: 9px;
+      color: var(--txt2);
+      line-height: 1.5
+    }
+
+    .aitm {
+      font-family: var(--mono);
+      font-size: 7px;
+      color: var(--txt3);
+      margin-top: 3px
+    }
+
+    /* TABS */
+    .tabs {
+      flex-shrink: 0;
+      height: 32px;
+      background: var(--bg1);
+      border-top: 1px solid var(--bd);
+      display: flex;
+      align-items: stretch;
+      position: relative;
+      z-index: 50
+    }
+
+    .tbtn {
+      font-family: var(--head);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: var(--txt2);
+      background: transparent;
+      border: none;
+      border-top: 2px solid transparent;
+      padding: 0 14px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all .2s;
+      white-space: nowrap
+    }
+
+    .tbtn:hover {
+      color: var(--txt)
+    }
+
+    .tbtn.active {
+      color: var(--cyan);
+      border-top-color: var(--cyan);
+      background: var(--cg)
+    }
+
+    .bpanel {
+      flex-shrink: 0;
+      height: 0;
+      overflow: hidden;
+      transition: height .3s cubic-bezier(.4, 0, .2, 1);
+      background: var(--bg1);
+      border-top: 1px solid var(--bd)
+    }
+
+    .bpanel.open {
+      height: 155px
+    }
+
+    .btab {
+      display: none;
+      height: 100%;
+      padding: 11px 14px;
+      gap: 14px;
+      overflow: hidden
+    }
+
+    .btab.active {
+      display: flex
+    }
+
+    .tlscroll {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 5px
+    }
+
+    .tlrow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 7px;
+      border-radius: 3px;
+      background: var(--bg2);
+      border: 1px solid var(--bd);
+      font-size: 10px;
+      flex-shrink: 0
+    }
+
+    .tltag {
+      font-family: var(--mono);
+      font-size: 7px;
+      padding: 2px 5px;
+      border-radius: 2px;
+      flex-shrink: 0
+    }
+
+    .tltag.past {
+      background: rgba(90, 127, 160, .1);
+      color: var(--txt2);
+      border: 1px solid var(--bd2)
+    }
+
+    .tltag.now {
+      background: var(--cg);
+      color: var(--cyan);
+      border: 1px solid var(--cyan2)
+    }
+
+    .tltag.pred {
+      background: var(--ag);
+      color: var(--amber);
+      border: 1px solid var(--amb2)
+    }
+
+    .tltag.crit {
+      background: var(--rg);
+      color: var(--red);
+      border: 1px solid var(--red2)
+    }
+
+    .tltime {
+      font-family: var(--mono);
+      font-size: 8px;
+      color: var(--txt3);
+      flex-shrink: 0
+    }
+
+    .tlttl {
+      font-weight: 600;
+      color: var(--txt);
+      flex: 1
+    }
+
+    .tldsc {
+      font-size: 9px;
+      color: var(--txt2)
+    }
+
+    .k27bars {
+      display: flex;
+      gap: 1.5px;
+      align-items: flex-end;
+      height: 100px
+    }
+
+    .k27bar {
+      flex: 1;
+      border-radius: 1px 1px 0 0;
+      min-height: 2px;
+      transition: height .5s, background .5s;
+      cursor: pointer
+    }
+
+    .setgrid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      width: 100%
+    }
+
+    .setitem {
+      background: var(--bg2);
+      border: 1px solid var(--bd);
+      border-radius: 3px;
+      padding: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px
+    }
+
+    .setlbl {
+      font-size: 10px;
+      color: var(--txt2)
+    }
+
+    .tgl {
+      width: 34px;
+      height: 18px;
+      background: var(--bg);
+      border: 1px solid var(--bd);
+      border-radius: 9px;
+      position: relative;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: all .2s;
+      flex-shrink: 0
+    }
+
+    .tgl.on {
+      background: rgba(0, 229, 255, .15);
+      border-color: var(--cyan2)
+    }
+
+    .tgl::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 12px;
+      height: 12px;
+      background: var(--txt3);
+      border-radius: 50%;
+      transition: all .2s
+    }
+
+    .tgl.on::after {
+      transform: translateX(16px);
+      background: var(--cyan)
+    }
+
+    .protcol {
+      flex: 1;
+      font-size: 10px;
+      color: var(--txt2);
+      line-height: 1.9;
+      overflow-y: auto
+    }
+
+    .prothl {
+      font-family: var(--head);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      display: block
+    }
+
+    .drag-handle {
+      width: 5px;
+      background: var(--bd);
+      cursor: ew-resize;
+      position: relative;
+      z-index: 10;
+      transition: background 0.2s;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+    }
+
+    .drag-handle:hover {
+      background: var(--cyan);
+    }
+
+    .drag-handle:hover {
+      background: var(--cyan);
+    }
+
+    .sl {
+      width: 190px;
+      flex-shrink: 0;
+      position: relative;
+      will-change: width;
+    }
+
+    .sr {
+      width: 268px;
+      flex-shrink: 0;
+      position: relative;
+      will-change: width;
+    }
+
+    .toggle-left,
+    .toggle-right {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%) translateZ(0);
+      width: 20px;
+      height: 40px;
+      background: rgba(2, 6, 9, .9);
+      border: 1px solid var(--bd2);
+      border-radius: 3px;
+      color: var(--txt2);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.3s, background 0.2s;
+      backface-visibility: hidden;
+    }
+
+    .toggle-left:hover,
+    .toggle-right:hover {
+      background: rgba(0, 229, 255, .1);
+      color: var(--cyan);
+    }
+
+    .toggle-left {
+      left: 0;
+    }
+
+    .toggle-right {
+      right: 0;
+    }
+
+    /* =============================================
+   RESPONSIVE DESIGN — KUARA
+   ============================================= */
+
+    /* Tablet geniş (≤ 1200px): sidebar'ları daralt */
+    @media (max-width: 1200px) {
+      .sl {
+        width: 170px;
+      }
+
+      .sr {
+        width: 230px;
+      }
+    }
+
+    /* Tablet (≤ 900px): sidebar'lar overlay drawer'a dönüşür */
+    @media (max-width: 900px) {
+
+      /* Header */
+      .logo-sub {
+        display: none;
+      }
+
+      .hsep {
+        display: none;
+      }
+
+      .hsp {
+        flex: 0 !important;
+        min-width: 0;
+      }
+
+      .hnav {
+        display: none;
+      }
+
+      .hclk {
+        font-size: 9px;
+      }
+
+      .hst {
+        font-size: 9px;
+        padding: 3px 8px;
+        letter-spacing: 1px;
+      }
+
+      /* Layout: sidebars overlay */
+      .sl {
+        position: fixed !important;
+        top: 50px;
+        left: 0;
+        bottom: 0;
+        width: 240px !important;
+        z-index: 600;
+        transform: translateX(-100%);
+        transition: transform .28s cubic-bezier(.4, 0, .2, 1);
+        overflow-y: auto;
+        box-shadow: 6px 0 24px rgba(0, 0, 0, .85);
+      }
+
+      .sl.mob-open {
+        transform: translateX(0) !important;
+      }
+
+      .sr {
+        position: fixed !important;
+        top: 50px;
+        right: 0;
+        bottom: 0;
+        width: 265px !important;
+        z-index: 600;
+        transform: translateX(100%);
+        transition: transform .28s cubic-bezier(.4, 0, .2, 1);
+        overflow-y: auto;
+        box-shadow: -6px 0 24px rgba(0, 0, 0, .85);
+      }
+
+      .sr.mob-open {
+        transform: translateX(0) !important;
+      }
+
+      /* Drag handles gizli */
+      .drag-handle {
+        display: none !important;
+      }
+
+      /* Center tam genişlik */
+      .c3d {
+        width: 100% !important;
+      }
+
+      /* Backdrop overlay */
+      .mob-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .6);
+        z-index: 599;
+        backdrop-filter: blur(2px);
+      }
+
+      .mob-overlay.active {
+        display: block;
+      }
+
+      /* Toggle butonları her zaman görünür, sabitlenmiş */
+      .toggle-left,
+      .toggle-right {
+        position: fixed !important;
+        top: 62px !important;
+        opacity: 1 !important;
+        z-index: 601 !important;
+        width: 22px !important;
+        height: 44px !important;
+        transform: none !important;
+      }
+
+      .toggle-left {
+        left: 0 !important;
+        border-radius: 0 4px 4px 0 !important;
+        border-left: none !important;
+      }
+
+      .toggle-right {
+        right: 0 !important;
+        border-radius: 4px 0 0 4px !important;
+        border-right: none !important;
+      }
+
+      /* nasaTimeBar: tam genişlik, taşma kaydırmalı */
+      #nasaTimeBar {
+        left: 10px !important;
+        right: 10px !important;
+        transform: none !important;
+        min-width: 0 !important;
+        width: calc(100% - 20px) !important;
+        max-width: none !important;
+        bottom: 48px !important;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+
+      #nasaTimeBar::-webkit-scrollbar {
+        display: none;
+      }
+
+      /* Impact legend: kompakt */
+      .impleg {
+        min-width: 130px !important;
+        padding: 6px 8px !important;
+        bottom: 8px !important;
+        right: 8px !important;
+        font-size: 8px;
+      }
+
+      .impleg .impttl {
+        font-size: 7px;
+        margin-bottom: 4px;
+      }
+
+      .impleg .improw {
+        margin-bottom: 3px;
+        font-size: 8px;
+      }
+
+      /* HUD */
+      .hudtr {
+        right: 6px;
+        top: 6px;
+      }
+
+      .hchip {
+        font-size: 8px;
+        padding: 3px 7px;
+      }
+
+      /* Bottom panel */
+      .bpanel.open {
+        height: 140px;
+      }
+
+      .tlrow {
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+    }
+
+    /* Küçük telefon (≤ 480px) */
+    @media (max-width: 480px) {
+      .hdr {
+        padding: 0 8px;
+        gap: 7px;
+        height: 46px;
+      }
+
+      .logo-sun {
+        width: 22px;
+        height: 22px;
+      }
+
+      .logo-name {
+        font-size: 13px;
+        letter-spacing: 4px;
+      }
+
+      /* Impact legend ve Kp strip'i gizle */
+      .impleg {
+        display: none !important;
+      }
+
+      .kpstrip {
+        display: none;
+      }
+
+      /* nasaTimeBar daha kompakt */
+      #nasaTimeBar {
+        gap: 6px !important;
+        padding: 5px 8px !important;
+        bottom: 44px !important;
+      }
+
+      #nasaTimeBar>div[style*="flex-direction:column"][style*="min-width:52px"] {
+        display: none;
+        /* SPEED label + hız göstergesi gizle */
+      }
+
+      /* Timeline description gizle */
+      .tldsc {
+        display: none;
+      }
+
+      /* Settings grid 2 sütun */
+      .setgrid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      /* Tabs */
+      .tbtn {
+        font-size: 8px;
+        letter-spacing: 1px;
+        padding: 0 8px;
+      }
+
+      /* Sidebar genişliği */
+      .sl {
+        width: 200px !important;
+      }
+
+      .sr {
+        width: 88vw !important;
+        max-width: 280px !important;
+      }
+
+      /* Header HUD üst çip'leri yok et */
+      .hudtl .hchip {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Mobile sidebar backdrop -->
+  <div class="mob-overlay" id="mobOverlay"></div>
+
+  <header class="hdr">
+    <div style="display:flex;align-items:center;gap:9px;flex-shrink:0">
+      <div class="logo-sun"></div>
+      <div>
+        <div class="logo-name">KUARA</div>
+        <div class="logo-sub">Güneş Fırtınası Erken Uyarı Sistemi</div>
+      </div>
+    </div>
+    <div class="hsep"></div>
+    <div class="hclk">TRT <span id="hclk">--:--:--</span> &nbsp;|&nbsp; <span id="hdat">----/--/--</span></div>
+    <div class="hst ok" id="hst">
+      <div class="hdot"></div><span id="hstxt">NOMİNAL</span>
+    </div>
+    <div class="hsp"></div>
+    <nav class="hnav">
+      <button class="hbtn active" onclick="htab('dash',this)">Gösterge Paneli</button>
+      <button class="hbtn" onclick="htab('timeline',this)">Zaman Çizelgesi</button>
+    </nav>
+  </header>
+
+  <div class="toggle-left" id="toggleLeft">▶</div>
+  <div class="toggle-right" id="toggleRight">◀</div>
+
+  <div class="wrap">
+
+    <aside class="sl">
+      <div class="sl-ttl">Güneş Rüzgarı Parametreleri</div>
+      <div class="bzc">
+        <div class="bzh">BZ_GSM <span class="bztg" id="bztg">-- nT</span></div>
+        <div class="bzn neu" id="bzn">---</div>
+        <div class="bzu">nanoTesla (nT)</div>
+        <div class="bzsp" id="bzsp"></div>
+      </div>
+      <div class="mc" id="mc-speed">
+        <div class="ml">Akış Hızı <span style="font-size:7px;color:var(--txt3)">SW</span></div>
+        <div class="mv" id="mv-speed">---</div>
+        <div class="mu">km/s</div>
+        <div class="mtr" id="mt-speed"></div>
+        <div class="mbar">
+          <div class="mfill" id="mf-speed" style="background:var(--amber);width:0"></div>
+        </div>
+      </div>
+      <div class="mc" id="mc-density">
+        <div class="ml">Proton Yoğunluğu</div>
+        <div class="mv" id="mv-density">---</div>
+        <div class="mu">parçacık/cm³</div>
+        <div class="mtr" id="mt-density"></div>
+        <div class="mbar">
+          <div class="mfill" id="mf-density" style="background:var(--cyan);width:0"></div>
+        </div>
+      </div>
+      <div class="mc" id="mc-T">
+        <div class="ml">Sıcaklık</div>
+        <div class="mv" id="mv-T" style="font-size:16px">---</div>
+        <div class="mu">×10⁴ Kelvin</div>
+        <div class="mtr" id="mt-T"></div>
+        <div class="mbar">
+          <div class="mfill" id="mf-T" style="background:#ff6d00;width:0"></div>
+        </div>
+      </div>
+      <div class="mc" id="mc-F">
+        <div class="ml">Toplam Alan |B|</div>
+        <div class="mv cyan" id="mv-F">---</div>
+        <div class="mu">nT</div>
+        <div class="mtr" id="mt-F"></div>
+        <div class="mbar">
+          <div class="mfill" id="mf-F" style="background:var(--cyan);width:0"></div>
+        </div>
+      </div>
+      <div class="mc" id="mc-E">
+        <div class="ml">Elektrik Alanı</div>
+        <div class="mv" id="mv-E">---</div>
+        <div class="mu">mV/m</div>
+        <div class="mtr" id="mt-E"></div>
+        <div class="mbar">
+          <div class="mfill" id="mf-E" style="background:var(--red);width:0"></div>
+        </div>
+      </div>
+      <div class="mc" id="mc-SYMH">
+        <div class="ml">SYM-H İndeksi</div>
+        <div class="mv" id="mv-SYMH">---</div>
+        <div class="mu">nT (Fırtına İndeksi)</div>
+        <div class="mtr" id="mt-SYMH"></div>
+        <div class="mbar">
+          <div class="mfill" id="mf-SYMH" style="background:var(--red);width:0"></div>
+        </div>
+      </div>
+      <div class="src">
+        <div class="sl-ttl" style="padding:0 0 5px;border:none">Veri Kaynakları</div>
+        <span class="sdot live"></span>DSCOVR / ACE<br>
+        <span class="sdot live"></span>NOAA SWPC<br>
+        <span class="sdot live"></span>SDO Görüntüleri<br>
+        <span style="color:var(--txt3);font-size:8px">Son: </span><span id="lpoll"
+          style="color:var(--cyan2)">--:--:--</span>
+      </div>
+      <div style="padding:9px 11px">
+        <div class="sl-ttl" style="padding:0 0 5px;border:none">Güneş Aktivitesi</div>
+        <div class="sr2"><span class="sn2">X-Işını Sınıfı</span><span class="sv2" id="xrayc">--</span></div>
+        <div class="sr2"><span class="sn2">Güneş Lekesi No.</span><span class="sv2" id="sscnt">--</span></div>
+        <div class="sr2"><span class="sn2">CME Olayları</span><span class="sv2 warn" id="cmecnt">--</span></div>
+        <div class="sr2"><span class="sn2">Gecikme</span><span class="sv2 ok" id="latency">--ms</span></div>
+      </div>
+    </aside>
+
+    <div class="drag-handle left-drag" id="leftDrag"></div>
+
+    <div class="c3d">
+      <canvas id="ec"></canvas>
+      <div class="hud hudtl">
+      </div>
+      <div class="hud hudtr">
+        <div class="hlbl" style="text-align:right">Fırtına Ölçeği</div>
+        <div class="hchip" id="hglev">Fırtına: <strong id="hglevv">G0 Sakin</strong></div>
+        <div class="hchip">Aurora Sınırı: <strong id="haunl">--°N</strong></div>
+      </div>
+      <div class="hud hudbl">
+      </div>
+      <div id="nasaTimeBar"
+        style="position:absolute;bottom:14px;left:50%;transform:translateX(-50%);background:rgba(4,10,18,0.92);border:1px solid rgba(0,229,255,0.18);border-radius:8px;padding:10px 20px 10px 16px;backdrop-filter:blur(12px);display:flex;align-items:center;gap:14px;min-width:420px;box-shadow:0 4px 24px rgba(0,0,0,0.6);">
+        <button id="btnTimeBack" title="Zamanı Geri Götür" onclick="shiftTimeBack()"
+          style="background:none;border:none;cursor:pointer;color:rgba(0,229,255,0.7);font-size:16px;padding:4px 6px;transition:all .2s;line-height:1;flex-shrink:0;"
+          onmouseover="this.style.color='#00e5ff';this.style.textShadow='0 0 8px rgba(0,229,255,0.6)'"
+          onmouseout="this.style.color='rgba(0,229,255,0.7)';this.style.textShadow='none'">◄</button>
+        <button id="btnRev" title="Geri" onclick="setSolarDir(-1)"
+          style="background:none;border:none;cursor:pointer;color:rgba(90,127,160,0.8);font-size:15px;padding:2px 4px;transition:color .2s;line-height:1"
+          onmouseover="this.style.color='#00e5ff'"
+          onmouseout="this.style.color='rgba(90,127,160,0.8)'">&#9664;&#9664;</button>
+        <button id="btnPlay" onclick="toggleSolarPlay()"
+          style="width:34px;height:34px;border-radius:50%;background:rgba(0,229,255,0.12);border:1.5px solid rgba(0,229,255,0.5);cursor:pointer;color:#00e5ff;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;box-shadow:0 0 10px rgba(0,229,255,0.15)"
+          onmouseover="this.style.background='rgba(0,229,255,0.22)'"
+          onmouseout="this.style.background='rgba(0,229,255,0.12)'">&#9646;&#9646;</button>
+        <button id="btnFwd" title="İleri" onclick="setSolarDir(1)"
+          style="background:none;border:none;cursor:pointer;color:rgba(90,127,160,0.8);font-size:15px;padding:2px 4px;transition:color .2s;line-height:1"
+          onmouseover="this.style.color='#00e5ff'"
+          onmouseout="this.style.color='rgba(90,127,160,0.8)'">&#9654;&#9654;</button>
+        <div style="width:1px;height:28px;background:rgba(0,229,255,0.12);flex-shrink:0"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;min-width:52px">
+          <span
+            style="font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:2px;color:rgba(90,127,160,0.7);text-transform:uppercase;margin-bottom:2px">HIZ</span>
+          <span id="solarVelLabel"
+            style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:#00e5ff;letter-spacing:1px;text-shadow:0 0 8px rgba(0,229,255,0.4)">1.0x</span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:5px">
+          <input type="range" id="solarSlider" min="0" max="100" value="20"
+            style="-webkit-appearance:none;width:100%;height:3px;background:linear-gradient(90deg,rgba(0,229,255,0.15) 0%,rgba(0,229,255,0.6) 20%,rgba(0,229,255,0.15) 100%);outline:none;cursor:pointer;border-radius:2px;">
+          <div
+            style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:7px;color:rgba(90,127,160,0.5);letter-spacing:1px">
+            <span>DURAKLAT</span><span>YAVAŞ</span><span>NORMAL</span><span>HIZLI</span><span>MAKS</span>
+          </div>
+        </div>
+        <button id="btnLive" title="Canlı Veri Modu" onclick="toggleLiveMode()"
+          style="width:42px;height:28px;border-radius:4px;background:rgba(76,175,80,0.2);border:1.5px solid rgba(76,175,80,0.6);cursor:pointer;color:#4caf50;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;font-weight:bold;font-family:'JetBrains Mono',monospace;box-shadow:0 0 10px rgba(76,175,80,0.3);text-shadow:0 0 8px rgba(76,175,80,0.5);"
+          onmouseover="this.style.background='rgba(76,175,80,0.35)'"
+          onmouseout="this.style.background='rgba(76,175,80,0.2)'">CANLI</button>
+        <button id="btnTimeFwd" title="Zamanı İleriye Götür" onclick="shiftTimeFwd()"
+          style="background:none;border:none;cursor:pointer;color:rgba(0,229,255,0.7);font-size:16px;padding:4px 6px;transition:all .2s;line-height:1;flex-shrink:0;"
+          onmouseover="this.style.color='#00e5ff';this.style.textShadow='0 0 8px rgba(0,229,255,0.6)'"
+          onmouseout="this.style.color='rgba(0,229,255,0.7)';this.style.textShadow='none'">►</button>
+      </div>
+      <div class="impleg">
+        <div class="impttl">ETKİ BÖLGELERİ <span id="legkp"
+            style="font-family:var(--mono);font-size:8px;color:var(--txt3)">Kp --</span></div>
+        <div class="improw">
+          <div class="impsw" style="background:rgba(255,20,60,.7)"></div><span class="impnm">Elektrik
+            Şebekeleri</span><span class="implt" id="il0">--°+</span>
+        </div>
+        <div class="improw">
+          <div class="impsw" style="background:rgba(255,90,0,.6)"></div><span class="impnm">HF Radyo
+            Karartma</span><span class="implt" id="il1">--°+</span>
+        </div>
+        <div class="improw">
+          <div class="impsw" style="background:rgba(255,170,0,.5)"></div><span class="impnm">GPS Bozulması</span><span
+            class="implt" id="il2">--°+</span>
+        </div>
+        <div class="improw">
+          <div class="impsw" style="background:rgba(80,220,50,.4)"></div><span class="impnm">Aurora
+            Görünürlüğü</span><span class="implt" id="il3">--°+</span>
+        </div>
+        <div class="improw">
+          <div class="impsw" style="background:rgba(0,180,255,.15)"></div><span class="impnm">Minimal Etki</span><span
+            class="implt">Ekvatoral</span>
+        </div>
+        <div
+          style="margin-top:5px;padding-top:5px;border-top:1px solid var(--bd);font-family:var(--mono);font-size:7px;color:var(--txt3)">
+          Kp↑ → bölgeler ekvator'a genişler</div>
+      </div>
+    </div>
+
+    <div class="drag-handle right-drag" id="rightDrag"></div>
+
+    <aside class="sr">
+      <div class="rp">
+        <div class="rph">
+          <div class="rpt">Jeomanyetik Ölçek</div>
+          <div class="bdg blv" id="gbdg">G0 SAKİN</div>
+        </div>
+        <div class="gsc">
+          <div class="gl"><span>G1</span>
+            <div class="gll">KÜÇÜK</div>
+          </div>
+          <div class="gl"><span>G3</span>
+            <div class="gll">GÜÇLÜ</div>
+          </div>
+          <div class="gl"><span>G5</span>
+            <div class="gll">EKSTREM</div>
+          </div>
+        </div>
+        <div class="rows">
+          <div class="sr2"><span class="sn2">Kp İndeksi</span><span class="sv2" id="rkp">--</span></div>
+          <div class="sr2"><span class="sn2">AE İndeksi</span><span class="sv2" id="rae">--</span></div>
+          <div class="sr2"><span class="sn2">Dst İndeksi</span><span class="sv2" id="rdst">--</span></div>
+          <div class="sr2"><span class="sn2">Fırtına Başlangıcı</span><span class="sv2" id="ronset">Yok</span></div>
+          <div class="sr2"><span class="sn2">Tahmini Zirve</span><span class="sv2" id="rpeak">--</span></div>
+        </div>
+      </div>
+      <div class="rp">
+        <div class="rph">
+          <div class="rpt">Parametre Geçmişi (6s)</div>
+          <div class="bdg blv">CANLI</div>
+        </div>
+        <div class="chw">
+          <div class="chc"><canvas id="ch1"></canvas></div>
+          <div class="chleg">
+            <div class="cli">
+              <div class="cll" style="background:var(--red)"></div>BZ
+            </div>
+            <div class="cli">
+              <div class="cll" style="background:var(--amber)"></div>Hız÷10
+            </div>
+            <div class="cli">
+              <div class="cll" style="background:var(--cyan)"></div>Yoğunluk
+            </div>
+            <div class="cli">
+              <div class="cll" style="background:#c084fc"></div>SYM-H÷3
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="rp">
+        <div class="rph">
+          <div class="rpt">E-Alanı &amp; SYM-H</div>
+          <div class="bdg" id="efbdg">NORMAL</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--txt3);margin-left:auto" id="ch2time">--:--:--
+          </div>
+        </div>
+        <div class="chw">
+          <div class="chc"><canvas id="ch2"></canvas></div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;padding:0 1px">
+            <div>
+              <div style="font-size:7px;letter-spacing:2px;color:var(--txt3)">E MAKS (6S)</div>
+              <div style="font-family:var(--mono);font-size:15px;color:var(--amber)" id="remax">--</div>
+            </div>
+            <div>
+              <div style="font-size:7px;letter-spacing:2px;color:var(--txt3)">SYM-H MİN</div>
+              <div style="font-family:var(--mono);font-size:15px;color:var(--red)" id="rsmin">--</div>
+            </div>
+            <div>
+              <div style="font-size:7px;letter-spacing:2px;color:var(--txt3)">KP TAHMİNİ</div>
+              <div style="font-family:var(--mono);font-size:15px;color:var(--cyan)" id="rkpest">--</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="rp" style="border-bottom:none">
+        <div class="rph">
+          <div class="rpt">Aktif Uyarılar</div>
+          <div class="bdg" id="albdg">0 AKTİF</div>
+        </div>
+        <div id="allist" style="padding-bottom:7px"></div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="tabs">
+    <button class="tbtn" id="tbtn-tl" onclick="toggleBP('tl')">▸ Zaman Çizelgesi</button>
+    <button class="tbtn" id="tbtn-prot" onclick="toggleBP('prot')">▸ Protokoller</button>
+  </div>
+
+  <div class="bpanel" id="bpanel">
+    <div class="btab" id="bt-tl">
+      <div class="tlscroll" id="tllist"></div>
+    </div>
+    <div class="btab" id="bt-prot">
+      <div class="protcol"><span class="prothl" style="color:var(--red)">G4-G5 EXTREME FIRTINA</span>⚡ Elektrik
+        şebekeleri → manuel kontrol &nbsp;·&nbsp; 🛰️ Uydular güvenli moda &nbsp;·&nbsp; 📡 HF yedek iletişim
+        &nbsp;·&nbsp; ✈️ Kutup uçuşları rota değiştir</div>
+      <div class="protcol"><span class="prothl" style="color:var(--amber)">G2-G3 ORTA FIRTINA</span>📻 HF radyo
+        bozulmasını izle &nbsp;·&nbsp; 🛰️ Uydu tutum kontrolünü artır &nbsp;·&nbsp; ⚡ Enerji operatörlerini uyar
+        &nbsp;·&nbsp; 🧭 GPS hassasiyetini kontrol et</div>
+      <div class="protcol"><span class="prothl" style="color:var(--green)">G1 KÜÇÜK / İZLEME</span>🌌 Yüksek enlemlerde
+        aurora &nbsp;·&nbsp; 📊 Artırılmış izleme sürdür &nbsp;·&nbsp; 🔔 Kamuya aurora tavsiyeleri yayınla</div>
+    </div>
+  </div>
+
+  <script>
+    'use strict';
+
+    /* ═══ STATE ═══ */
+    const S = {
+      bz: 0, speed: 0, density: 0, T: 0, F: 0, E: 0, SYMH: 0, kp: 0, dst: 0, ae: 0, gLevel: 0,
+      h: { bz: [], speed: [], density: [], E: [], SYMH: [], F: [], T: [] },
+      kp24: Array.from({ length: 24 }, () => 0),
+      kp27: Array.from({ length: 27 }, () => 0),
+      maxH: 360, dpCount: 0, startTime: Date.now(), tick: 0, timeOffset: 0,
+      notifications: null, currentStorms: null, timelineData: null, dataLoaded: false
+    };
+    const THR = { bz: -15, speed: 600, symh: -50, efield: 5, density: 20, kp: 5 };
+    const POLL_INTERVAL = 15000;
+    let stormGlowMesh = null, stormIntensity = 0;
+    let solarCoronaMesh = null, solarWindParticles = null;
+
+    /* ═══ API DATA FETCHING ═══ */
+    function fetchLatestValues() {
+      const t0 = Date.now();
+      $.getJSON('/latest-values', function (data) {
+        if (!data || data.error) return;
+        const n = data.count;
+        if (n === 0) return;
+        S.bz = data.BZ_GSM[n - 1] || 0;
+        S.speed = data.flow_speed[n - 1] || 0;
+        S.density = data.proton_density[n - 1] || 0;
+        S.T = +((data.T[n - 1] || 0) / 10000).toFixed(1);
+        S.F = data.F[n - 1] || 0;
+        S.E = data.E[n - 1] || 0;
+        S.SYMH = Math.round(data.SYM_H[n - 1] || 0);
+        S.kp = +Math.max(0, Math.min(9, (-S.bz + 5) * .3 + (S.speed - 350) * .01)).toFixed(1);
+        S.dst = Math.round(S.SYMH * .8);
+        S.ae = Math.round(Math.max(0, -S.bz * 80 + S.speed * .2));
+        const maxPts = S.maxH;
+        const step = Math.max(1, Math.floor(n / maxPts));
+        S.h.bz = []; S.h.speed = []; S.h.density = []; S.h.E = []; S.h.SYMH = []; S.h.F = []; S.h.T = [];
+        for (let i = 0; i < n; i += step) {
+          S.h.bz.push(data.BZ_GSM[i] || 0);
+          S.h.speed.push(data.flow_speed[i] || 0);
+          S.h.density.push(data.proton_density[i] || 0);
+          S.h.E.push(data.E[i] || 0);
+          S.h.SYMH.push(Math.round(data.SYM_H[i] || 0));
+          S.h.F.push(data.F[i] || 0);
+          S.h.T.push(+((data.T[i] || 0) / 10000).toFixed(1));
+        }
+        S.dpCount = n; S.dataLoaded = true;
+        S.kp24.shift(); S.kp24.push(S.kp);
+        const lp = document.getElementById('lpoll');
+        if (lp) lp.textContent = new Date().toLocaleTimeString('tr-TR');
+        const lat = document.getElementById('latency');
+        if (lat) lat.textContent = (Date.now() - t0) + 'ms';
+        updateUI();
+      });
+    }
+    function fetchNotifications() {
+      $.getJSON('/notifications', function (data) {
+        if (!data || data.error) return;
+        S.notifications = data;
+        if (data.model_predictions) {
+          let worstClass = 0, worstScore = 0;
+          Object.entries(data.model_predictions).forEach(([h, pred]) => {
+            if (pred.predicted_class > worstClass) {
+              worstClass = pred.predicted_class;
+              if (data.predictions[h]) worstScore = data.predictions[h].score;
+            }
+          });
+          if (worstClass === 0) S.gLevel = 0;
+          else if (worstClass === 1) S.gLevel = worstScore >= 4 ? 2 : 1;
+          else S.gLevel = worstScore >= 8 ? 5 : worstScore >= 6 ? 4 : 3;
+        }
+        updateUI();
+      });
+    }
+    function fetchTimeline() {
+      $.getJSON('/timeline', function (data) {
+        if (!data || data.error) return;
+        S.timelineData = data;
+        renderTL();
+      });
+    }
+    function fetchCurrentStorms() {
+      $.getJSON('/current-storms', function (data) {
+        if (!data || data.error) return;
+        S.currentStorms = data;
+        updateUI();
+      });
+    }
+    function fetchAll() { fetchLatestValues(); fetchNotifications(); fetchTimeline(); fetchCurrentStorms(); }
+    function startPolling() {
+      fetchAll();
+      setInterval(fetchAll, POLL_INTERVAL);
+    }
+
+    /* ═══ STORM VISUALS ═══ */
+    function updateStormVisuals() {
+      if (!scene || !solarPlanets.length) return;
+      const earth = solarPlanets.find(p => p.isEarth);
+      if (!earth) return;
+      const storms = S.currentStorms;
+      /* Earth aurora glow */
+      if (!stormGlowMesh) {
+        const geo = new THREE.SphereGeometry(6.0, 32, 32);
+        const mat = new THREE.MeshBasicMaterial({ color: 0x00e676, transparent: true, opacity: 0, side: THREE.BackSide });
+        stormGlowMesh = new THREE.Mesh(geo, mat);
+        earth.mesh.add(stormGlowMesh);
+      }
+      const targetInt = (storms && storms.active) ? storms.intensity : 0;
+      stormIntensity += (targetInt - stormIntensity) * 0.05;
+      stormGlowMesh.material.opacity = stormIntensity * 0.5;
+      if (storms && storms.active) {
+        const col = storms.severity === 'extreme' ? 0xff1744 : storms.severity === 'storm' ? 0xff6d00 : storms.severity === 'weak' ? 0xffab00 : 0x00e676;
+        stormGlowMesh.material.color.setHex(col);
+        const pulse = Math.sin(Date.now() / 500) * 0.1 + 1.0;
+        stormGlowMesh.scale.set(pulse, pulse, pulse);
+      } else {
+        stormGlowMesh.scale.set(1, 1, 1);
+      }
+    }
+    function updateSolarStormVisuals() {
+      if (!scene || !solarPlanets.length) return;
+      const storms = S.currentStorms;
+      const intensity = (storms && storms.active) ? storms.intensity : 0;
+      const baseIntensity = Math.max(0.05, Math.abs(S.bz) / 20);
+      const vizIntensity = Math.max(intensity, baseIntensity);
+      /* Sun corona glow */
+      if (!solarCoronaMesh) {
+        const geo = new THREE.SphereGeometry(35, 32, 32);
+        const mat = new THREE.MeshBasicMaterial({ color: 0xff6d00, transparent: true, opacity: 0, side: THREE.BackSide, blending: THREE.AdditiveBlending });
+        solarCoronaMesh = new THREE.Mesh(geo, mat);
+        scene.add(solarCoronaMesh);
+      }
+      const coronaTarget = vizIntensity * 0.25;
+      solarCoronaMesh.material.opacity += (coronaTarget - solarCoronaMesh.material.opacity) * 0.05;
+      if (vizIntensity > 0.01) {
+        const pulse = Math.sin(Date.now() / 400) * 0.06 + 1.0;
+        solarCoronaMesh.scale.set(pulse, pulse, pulse);
+        const col = vizIntensity > 0.7 ? 0xff1744 : vizIntensity > 0.4 ? 0xff6d00 : 0xffab00;
+        solarCoronaMesh.material.color.setHex(col);
+      }
+      /* Solar wind / CME particles streaming sun → earth */
+      const earth = solarPlanets.find(p => p.isEarth);
+      if (!earth) return;
+      if (!solarWindParticles) {
+        const count = 300;
+        const positions = new Float32Array(count * 3);
+        const colors = new Float32Array(count * 3);
+        for (let i = 0; i < count; i++) { colors[i * 3] = 1; colors[i * 3 + 1] = 0.6; colors[i * 3 + 2] = 0.1; }
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        const mat = new THREE.PointsMaterial({ size: 1.8, vertexColors: true, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
+        solarWindParticles = new THREE.Points(geo, mat);
+        solarWindParticles._pd = Array.from({ length: count }, () => ({
+          p: Math.random(), sp: 0.003 + Math.random() * 0.008,
+          ox: (Math.random() - .5) * 15, oy: (Math.random() - .5) * 15
+        }));
+        scene.add(solarWindParticles);
+      }
+      const earthPos = new THREE.Vector3();
+      earth.mesh.getWorldPosition(earthPos);
+      const isStormActive = storms && storms.active;
+      if (vizIntensity > 0.02 && isStormActive) {
+        if (!solarWindParticles.visible) solarWindParticles.visible = true;
+        solarWindParticles.material.opacity += (Math.min(0.7, vizIntensity * 0.8) - solarWindParticles.material.opacity) * 0.08;
+        const pos = solarWindParticles.geometry.attributes.position.array;
+        const col = solarWindParticles.geometry.attributes.color.array;
+        const pd = solarWindParticles._pd;
+        for (let i = 0; i < pd.length; i++) {
+          pd[i].p += pd[i].sp * (0.5 + vizIntensity);
+          if (pd[i].p > 1) { pd[i].p = 0; pd[i].ox = (Math.random() - .5) * 15; pd[i].oy = (Math.random() - .5) * 15; pd[i].sp = 0.003 + Math.random() * 0.008; }
+          const t = pd[i].p;
+          const spread = Math.sin(t * Math.PI) * 0.8;
+          pos[i * 3] = earthPos.x * t + pd[i].ox * spread;
+          pos[i * 3 + 1] = pd[i].oy * spread;
+          pos[i * 3 + 2] = earthPos.z * t + pd[i].oy * spread * 0.5;
+          const heat = 1 - t * 0.4;
+          col[i * 3] = 1; col[i * 3 + 1] = 0.3 + t * 0.4; col[i * 3 + 2] = t * 0.3;
+        }
+        solarWindParticles.geometry.attributes.position.needsUpdate = true;
+        solarWindParticles.geometry.attributes.color.needsUpdate = true;
+      } else {
+        solarWindParticles.material.opacity *= 0.93;
+        if (solarWindParticles.material.opacity < 0.01) {
+          solarWindParticles.material.opacity = 0;
+          solarWindParticles.visible = false;
+        }
+      }
+    }
+
+    /* ═══ SOLAR SYSTEM THREE.JS ═══ */
+    let scene, cam, renderer, controls;
+    let solarPlanets = [], solarSunUniforms, solarSpeedMult = 0.3, solarTargetObject = null, solarIsDragging = false, solarStartX, solarStartY, lastKp = -99;
+    let satSimTime = null; // Artık global kapsamda
+
+    function initThree() {
+      const cv = document.getElementById('ec');
+      if (!cv) return;
+      const W = cv.clientWidth || window.innerWidth - 460, H = cv.clientHeight || window.innerHeight - 82;
+
+      scene = new THREE.Scene();
+      cam = new THREE.PerspectiveCamera(60, W / H, 0.1, 4000);
+      cam.position.set(0, 300, 400);
+
+      renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      renderer.setSize(W, H);
+
+      controls = new THREE.OrbitControls(cam, renderer.domElement);
+      controls.enableDamping = true;
+
+      scene.add(new THREE.AmbientLight(0x222222));
+      const light = new THREE.PointLight(0xffffff, 4, 1500);
+      scene.add(light);
+
+      /* Stars */
+      const starsGeo = new THREE.BufferGeometry();
+      const starsArray = new Float32Array(5000 * 3);
+      for (let i = 0; i < 5000 * 3; i++)starsArray[i] = (Math.random() - .5) * 2000;
+      starsGeo.setAttribute('position', new THREE.BufferAttribute(starsArray, 3));
+      scene.add(new THREE.Points(starsGeo, new THREE.PointsMaterial({ size: 1.2, color: 0xffffff })));
+
+      /* Sun with shader */
+      solarSunUniforms = { time: { value: 0.0 } };
+      const sunVert = `varying vec3 vPosition;void main(){vPosition=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`;
+      const sunFrag = `varying vec3 vPosition;uniform float time;
+    float rand(vec3 p){return fract(sin(dot(p,vec3(12.9898,78.233,45.164)))*43758.5453);}
+    float noise(vec3 p){vec3 i=floor(p);vec3 f=fract(p);f=f*f*(3.0-2.0*f);
+    return mix(mix(mix(rand(i+vec3(0,0,0)),rand(i+vec3(1,0,0)),f.x),mix(rand(i+vec3(0,1,0)),rand(i+vec3(1,1,0)),f.x),f.y),
+    mix(mix(rand(i+vec3(0,0,1)),rand(i+vec3(1,0,1)),f.x),mix(rand(i+vec3(0,1,1)),rand(i+vec3(1,1,1)),f.x),f.y),f.z);}
+    float fbm(vec3 p){float total=0.0;float amplitude=1.0;float frequency=1.0;
+    for(int i=0;i<6;i++){total+=amplitude*noise(p*frequency);amplitude*=0.5;frequency*=2.0;}return total;}
+    void main(){vec3 coord=vPosition*0.1-vec3(time*0.5,time*0.2,time*0.3);
+    float n=fbm(coord);vec3 color=mix(vec3(0.7,0.15,0.0),vec3(0.95,0.6,0.1),n);
+    color+=vec3(0.4,0.15,0.0)*n;gl_FragColor=vec4(color,1.0);}`;
+      const sunMesh = new THREE.Mesh(new THREE.SphereGeometry(25, 64, 64), new THREE.ShaderMaterial({ vertexShader: sunVert, fragmentShader: sunFrag, uniforms: solarSunUniforms }));
+      scene.add(sunMesh);
+      const solarInteractables = [sunMesh];
+
+      /* Planets */
+      const txLoader = new THREE.TextureLoader();
+      const planetData = [
+        { name: "Merkür", size: 2.2, dist: 60, speed: 0.04, color: 0xaaaaaa },
+        { name: "Venüs", size: 3.8, dist: 90, speed: 0.03, color: 0xffccaa },
+        { name: "Dünya", size: 4.5, dist: 135, speed: 0.02, isEarth: true },
+        { name: "Mars", size: 2.8, dist: 175, speed: 0.015, color: 0xff4422 },
+        { name: "Jüpiter", size: 11.0, dist: 250, speed: 0.008, color: 0xffaa55 },
+        { name: "Satürn", size: 9.5, dist: 320, speed: 0.006, color: 0xeedd88, ring: true },
+        { name: "Uranüs", size: 6.5, dist: 380, speed: 0.004, color: 0x66ccff },
+        { name: "Neptün", size: 6.2, dist: 430, speed: 0.003, color: 0x3333ff }
+      ];
+      /* Satellite tracking state */
+      let satDots = null, tleData = [], earthGroup = null, earthMeshRef = null;
+
+      planetData.forEach(p => {
+        let mesh;
+        let tiltedGroup = null;
+
+        if (p.isEarth) {
+          /* --- DÜNYA: FİZİKSEL ROTASYON VE EKSEN EĞİKLİĞİ --- */
+          mesh = new THREE.Group();
+          earthGroup = mesh;
+
+          // Eksen eğikliği grubu (23.44 derece)
+          tiltedGroup = new THREE.Group();
+          tiltedGroup.rotation.z = 23.27 * Math.PI / 180;
+          mesh.add(tiltedGroup);
+
+          const tDay = txLoader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg');
+          const surf = new THREE.Mesh(new THREE.SphereGeometry(p.size, 64, 64), new THREE.MeshStandardMaterial({
+            map: tDay, roughness: 0.7, metalness: 0.1
+          }));
+          earthMeshRef = surf;
+          tiltedGroup.add(surf);
+
+          /* Bulut katmanı */
+          const tCld = txLoader.load('https://unpkg.com/three-globe/example/img/earth-clouds1024.png');
+          const cld = new THREE.Mesh(new THREE.SphereGeometry(p.size + 0.07, 64, 64),
+            new THREE.MeshLambertMaterial({ map: tCld, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending }));
+          tiltedGroup.add(cld);
+
+          /* Atmosfer glow */
+          const atmMat = new THREE.MeshLambertMaterial({ color: 0x0066ff, transparent: true, opacity: 0.08, side: THREE.BackSide });
+          tiltedGroup.add(new THREE.Mesh(new THREE.SphereGeometry(p.size + 0.35, 32, 32), atmMat));
+
+          solarInteractables.push(surf);
+
+
+
+
+          /* TLE verilerini CelesTrak'tan çek */
+          fetchTLEs(p.size);
+
+        } else {
+          mesh = new THREE.Mesh(new THREE.SphereGeometry(p.size, 32, 32), new THREE.MeshStandardMaterial({ color: p.color }));
+          if (p.ring) {
+            const r = new THREE.Mesh(new THREE.RingGeometry(p.size + 2, p.size + 10, 64),
+              new THREE.MeshBasicMaterial({ color: 0x666666, side: THREE.DoubleSide, transparent: true, opacity: 0.4 }));
+            r.rotation.x = Math.PI / 2; mesh.add(r);
+          }
+          solarInteractables.push(mesh);
+        }
+        scene.add(mesh);
+        const pts = [];
+        for (let i = 0; i <= 128; i++) { let a = (i / 128) * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(a) * p.dist, 0, Math.sin(a) * p.dist)); }
+        scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.1, transparent: true })));
+
+        solarPlanets.push({
+          mesh,
+          dist: p.dist,
+          speed: p.speed,
+          angle: Math.random() * Math.PI * 2,
+          isEarth: !!p.isEarth,
+          tiltedGroup: tiltedGroup // Dünya için referans saklanıyor
+        });
+      });
+
+      /* TLE çekme — CORS-safe proxy ile */
+      async function fetchTLEs(earthRadius) {
+        const sources = [
+          'https://celestrak.org/SOCRATES/query.php?GROUP=starlink&FORMAT=TLE',
+          'https://celestrak.org/SOCRATES/query.php?GROUP=gps-ops&FORMAT=TLE',
+          'https://celestrak.org/SOCRATES/query.php?GROUP=stations&FORMAT=TLE',
+          'https://celestrak.org/SOCRATES/query.php?GROUP=active&FORMAT=TLE',
+        ];
+        const proxy = 'https://corsproxy.io/?';
+        const celestrakBase = 'https://celestrak.org/pub/TLE/';
+        const groups = ['starlink.txt', 'gps-ops.txt', 'stations.txt', 'active.txt'];
+
+        let allLines = [];
+
+        for (const url of sources) {
+          try {
+            const r = await fetch(url, { signal: AbortSignal.timeout(5000) });
+            if (!r.ok) continue;
+            const txt = await r.text();
+            if (txt.length > 50) allLines = allLines.concat(txt.trim().split('\n').map(l => l.trim()).filter(Boolean));
+          } catch (e) { }
+        }
+
+        if (allLines.length < 30) {
+          for (const g of groups) {
+            try {
+              const url = proxy + encodeURIComponent(celestrakBase + g);
+              const r = await fetch(url, { signal: AbortSignal.timeout(6000) });
+              if (!r.ok) continue;
+              const txt = await r.text();
+              if (txt.length > 50) allLines = allLines.concat(txt.trim().split('\n').map(l => l.trim()).filter(Boolean));
+            } catch (e) { }
+          }
+        }
+
+        if (allLines.length < 10) {
+          console.warn('TLE verisi alınamadı, demo mod');
+          tleData = []; satSimTime = new Date();
+          updateSatellites(earthRadius); return;
+        }
+
+        const parsed = [];
+        for (let i = 0; i < allLines.length - 2; i += 3) {
+          const name = allLines[i].replace(/^0 /, '').trim();
+          const l1 = allLines[i + 1], l2 = allLines[i + 2];
+          if (l1 && l2 && l1.startsWith('1 ') && l2.startsWith('2 ')) {
+            try {
+              const satrec = satellite.twoline2satrec(l1, l2);
+              parsed.push({ name, satrec, col: satColor(name) });
+            } catch (e) { }
+          }
+        }
+        tleData = parsed;
+        satSimTime = new Date();
+        console.log('TLE yüklendi:', parsed.length, 'uydu');
+        updateSatellites(earthRadius);
+      }
+
+      /* Gezegen ve Yıldız pozisyonlarını güncelle */
+      function updateSatellites(earthRadius) {
+        if (!tleData.length || !satDots || !earthGroup) return;
+        const now = satSimTime || new Date();
+        const pos = satDots.geometry.attributes.position.array;
+        const col = satDots.geometry.attributes.color.array;
+        const scale = earthRadius / 6371;
+        let count = 0;
+        const max = Math.min(tleData.length, 5000);
+        for (let i = 0; i < max; i++) {
+          const { satrec, col: c } = tleData[i];
+          try {
+            const pv = satellite.propagate(satrec, now);
+            if (!pv || !pv.position || typeof pv.position.x !== 'number') continue;
+
+            const gmst = satellite.gstime(now);
+            const geo = satellite.eciToGeodetic(pv.position, gmst);
+            const lat = satellite.degreesLat(geo.latitude);
+            const lon = satellite.degreesLong(geo.longitude);
+            const alt = geo.height;
+
+            const R = (earthRadius + alt * scale);
+            const phi = (90 - lat) * Math.PI / 180;
+            const theta = (lon + 180) * Math.PI / 180;
+
+            /* ÖNEMLİ: Artık Dünya'nın alt grubu içinde oldukları için lokasyon hesaplaması sadece LOKAL yapılıyor */
+            pos[count * 3] = R * Math.sin(phi) * Math.cos(theta);
+            pos[count * 3 + 1] = R * Math.cos(phi);
+            pos[count * 3 + 2] = R * Math.sin(phi) * Math.sin(theta);
+
+            col[count * 3] = c[0]; col[count * 3 + 1] = c[1]; col[count * 3 + 2] = c[2];
+            count++;
+          } catch (e) { }
+        }
+        satDots.geometry.setDrawRange(0, count);
+        satDots.geometry.attributes.position.needsUpdate = true;
+        satDots.geometry.attributes.color.needsUpdate = true;
+        const sc = document.getElementById('satcount');
+        if (sc) sc.textContent = count + ' uydu canlı';
+      }
+
+      window._earthRadius = 4.5;
+      setInterval(() => {
+        if (!solarPaused && satSimTime) {
+          satSimTime = new Date(satSimTime.getTime() + 10000 * solarSpeedMult);
+          updateSatellites(window._earthRadius);
+        }
+      }, 500);
+
+      /* Click to track + ZOOM LOGIC */
+      const raycaster = new THREE.Raycaster(); const mouse = new THREE.Vector2();
+      cv.addEventListener('pointerdown', (e) => { solarIsDragging = false; solarStartX = e.clientX; solarStartY = e.clientY; });
+      cv.addEventListener('pointermove', (e) => { if (Math.abs(e.clientX - solarStartX) > 5 || Math.abs(e.clientY - solarStartY) > 5) solarIsDragging = true; });
+      cv.addEventListener('pointerup', (e) => {
+        if (solarIsDragging) return;
+        const rect = cv.getBoundingClientRect();
+        mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(mouse, cam);
+        const hits = raycaster.intersectObjects(solarInteractables);
+        if (hits.length > 0) {
+          let obj = hits[0].object;
+          let target = obj;
+          // Dönen alt gruplar yerine gezegenin ana grubunu hedef alması için kök (root) Grubu bul
+          while (target.parent && target.parent.type === "Group") {
+            target = target.parent;
+          }
+          solarTargetObject = target;
+          solarTargetObject.lastPos = null;
+
+          let rad = 4.5;
+          if (obj.geometry && obj.geometry.parameters.radius) rad = obj.geometry.parameters.radius;
+          window.targetDist = rad * 4;
+          window.isZooming = true;
+        } else {
+          solarTargetObject = null;
+        }
+      });
+
+      window.addEventListener('resize', () => { const W2 = cv.clientWidth, H2 = cv.clientHeight; if (!W2 || !H2) return; cam.aspect = W2 / H2; cam.updateProjectionMatrix(); renderer.setSize(W2, H2); });
+      animLoop();
+
+      const sl = document.getElementById('solarSlider');
+      if (sl) { sl.oninput = () => { applySpeed(); }; }
+    }
+
+    let solarDir = 1;
+    let solarPaused = false;
+    let liveMode = true;
+    let pausedTime = null;
+
+    function applySpeed() {
+      const sl = document.getElementById('solarSlider');
+      const lb = document.getElementById('solarVelLabel');
+      const btn = document.getElementById('btnPlay');
+      const btnR = document.getElementById('btnRev');
+      const btnF = document.getElementById('btnFwd');
+      const btnLive = document.getElementById('btnLive');
+      const v = sl ? sl.value / 100 : 0.2;
+
+      if (solarPaused) {
+        solarSpeedMult = 0;
+        if (lb) { lb.textContent = 'DURAKLAT'; lb.style.color = 'rgba(90,127,160,0.7)'; lb.style.textShadow = 'none'; }
+        if (btn) btn.innerHTML = '&#9654;';
+      } else {
+        solarSpeedMult = v * solarDir;
+        const spd = solarSpeedMult;
+        if (lb) {
+          lb.textContent = (spd === 0 ? '0.0' : (spd > 0 ? '+' : '') + spd.toFixed(1)) + 'x';
+          lb.style.color = solarDir < 0 ? '#ffab00' : '#00e5ff';
+          lb.style.textShadow = solarDir < 0 ? '0 0 8px rgba(255,171,0,0.4)' : '0 0 8px rgba(0,229,255,0.4)';
+        }
+        if (btn) btn.innerHTML = '&#9646;&#9646;';
+      }
+      if (btnR) btnR.style.color = (!solarPaused && solarDir < 0) ? '#00e5ff' : 'rgba(90,127,160,0.8)';
+      if (btnF) btnF.style.color = (!solarPaused && solarDir > 0) ? '#00e5ff' : 'rgba(90,127,160,0.8)';
+      if (btnLive) { btnLive.style.background = liveMode ? 'rgba(76,175,80,0.2)' : 'rgba(90,127,160,0.12)'; btnLive.style.borderColor = liveMode ? 'rgba(76,175,80,0.6)' : 'rgba(0,229,255,0.3)'; btnLive.style.color = liveMode ? '#4caf50' : 'rgba(90,127,160,0.8)'; btnLive.style.textShadow = liveMode ? '0 0 8px rgba(76,175,80,0.5)' : 'none'; }
+    }
+
+    function toggleSolarPlay() {
+      solarPaused = !solarPaused;
+      if (solarPaused) {
+        liveMode = false;
+        pausedTime = new Date();
+      } else {
+        pausedTime = null;
+      }
+      applySpeed();
+    }
+
+    function toggleLiveMode() {
+      liveMode = !liveMode;
+      if (liveMode) {
+        S.timeOffset = 0;
+        pausedTime = null;
+      }
+      updateUI();
+      applySpeed();
+    }
+
+    function setSolarDir(d) {
+      solarDir = d;
+      if (solarPaused) { solarPaused = false; }
+      applySpeed();
+    }
+
+    function shiftTimeBack() {
+      S.timeOffset -= 3600000;
+      updateUI();
+    }
+
+    function shiftTimeFwd() {
+      S.timeOffset += 3600000;
+      updateUI();
+    }
+
+    function animLoop() {
+      requestAnimationFrame(animLoop);
+      const speedMult = solarSpeedMult;
+      if (solarSunUniforms && speedMult !== 0) solarSunUniforms.time.value += 0.01 * (Math.abs(speedMult) * 3.3);
+      solarPlanets.forEach(p => {
+        if (speedMult !== 0) {
+          const d_angle = p.speed * speedMult * 5;
+          p.angle += d_angle;
+          p.mesh.position.set(Math.cos(p.angle) * p.dist, 0, Math.sin(p.angle) * p.dist);
+
+          if (p.isEarth && p.tiltedGroup) {
+            /* FİZİK KURALI: Dönüş hızı görsel amaçla yavaşlatıldı */
+            p.tiltedGroup.rotation.y += d_angle * 0.5;
+          } else {
+            p.mesh.rotation.y += 0.01 * speedMult * 10;
+          }
+        }
+      });
+
+      /* CAMERA TRACKING & ZOOMING */
+      if (solarTargetObject) {
+        const tp = new THREE.Vector3();
+        solarTargetObject.getWorldPosition(tp);
+        if (!solarTargetObject.lastPos) solarTargetObject.lastPos = tp.clone();
+
+        const delta = new THREE.Vector3().subVectors(tp, solarTargetObject.lastPos);
+        controls.target.copy(tp);
+        cam.position.add(delta);
+
+        if (window.isZooming) {
+          const c2t = new THREE.Vector3().subVectors(cam.position, tp);
+          if (c2t.length() > window.targetDist) {
+            c2t.multiplyScalar(0.92);
+            cam.position.copy(tp).add(c2t);
+          } else {
+            window.isZooming = false;
+          }
+        }
+        solarTargetObject.lastPos.copy(tp);
+      } else {
+        controls.target.lerp(new THREE.Vector3(0, 0, 0), 0.05);
+      }
+
+      if (controls) controls.update();
+      updateStormVisuals();
+      updateSolarStormVisuals();
+      renderer && renderer.render(scene, cam);
+    }
+
+    function updateImpact() {
+      if (Math.abs(S.kp - lastKp) < .12) return;
+      lastKp = S.kp;
+      const ab = Math.max(22, 67.5 - 4.4 * S.kp);
+      const gf = id => document.getElementById(id);
+      const sf = (id, v) => { const e = gf(id); if (e) e.textContent = v; };
+      sf('il0', Math.round(ab + 8) + '°+'); sf('il1', Math.round(ab) + '°+'); sf('il2', Math.round(Math.max(5, ab - 12)) + '°+'); sf('il3', Math.round(Math.max(5, ab - 24)) + '°+'); sf('legkp', 'Kp ' + S.kp.toFixed(1));
+    }
+
+    /* ═══ CHARTS ═══ */
+    class Chart {
+      constructor(id, sets) { this.cv = document.getElementById(id); this.ctx = this.cv?.getContext('2d'); this.sets = sets; this.hoveredIndex = -1; this.W = 0; this.H = 0; if (this.cv) { this.rsz(); this.cv.addEventListener('mousemove', (e) => this.onMouseMove(e)); this.cv.addEventListener('mouseleave', () => { this.hoveredIndex = -1; }); } window.addEventListener('resize', () => this.rsz()); }
+      rsz() { if (!this.cv) return; const p = this.cv.parentElement; const W = p.clientWidth || 260, H = p.clientHeight || 85; this.cv.width = W * devicePixelRatio; this.cv.height = H * devicePixelRatio; this.cv.style.width = W + 'px'; this.cv.style.height = H + 'px'; this.W = W * devicePixelRatio; this.H = H * devicePixelRatio; }
+      onMouseMove(e) { if (!this.cv || S.h.bz.length < 2) return; const rect = this.cv.getBoundingClientRect(); const x = (e.clientX - rect.left) * devicePixelRatio; const dataLen = S.h.bz.length; const dataIndex = Math.round((x / this.W) * (dataLen - 1)); this.hoveredIndex = Math.max(0, Math.min(dataLen - 1, dataIndex)); }
+      draw() {
+        if (!this.ctx) return; const ctx = this.ctx, W = this.cv.width, H = this.cv.height;
+        ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#020609'; ctx.fillRect(0, 0, W, H);
+        ctx.strokeStyle = 'rgba(15,32,53,.9)'; ctx.lineWidth = 1;
+        for (let i = 0; i <= 3; i++) { const y = i / 3 * H; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+        ctx.strokeStyle = 'rgba(90,127,160,.15)'; ctx.lineWidth = 1; ctx.setLineDash([3, 6]); ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke(); ctx.setLineDash([]);
+        if (S.h.bz.length < 2) return;
+        this.sets.forEach(ds => {
+          const d = S.h[ds.k]; if (!d || d.length < 2) return;
+          const vals = d.map(v => v * (ds.sc || 1)); const mn = Math.min(...vals, -4), mx = Math.max(...vals, 4), rng = mx - mn || 8;
+          ctx.beginPath(); ctx.strokeStyle = ds.c; ctx.lineWidth = 1.5 * devicePixelRatio; ctx.shadowColor = ds.c; ctx.shadowBlur = 5;
+          d.forEach((v, i) => { const x = (i / (d.length - 1)) * W; const y = H - ((v * (ds.sc || 1) - mn) / rng) * H * .82 - H * .09; i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
+          ctx.stroke(); ctx.shadowBlur = 0;
+          ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath(); const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, ds.c + '28'); g.addColorStop(1, ds.c + '00'); ctx.fillStyle = g; ctx.fill();
+        });
+
+        // Tooltip - Fare üzerindeki veri noktası
+        if (this.hoveredIndex >= 0 && S.h.bz.length > 1) {
+          const dataLen = S.h.bz.length;
+          const now = new Date(Date.now() + S.timeOffset + new Date().getTimezoneOffset() * 60000 + 3 * 3600000);
+          const secondsAgo = dataLen - 1 - this.hoveredIndex;
+          const pointTime = new Date(now.getTime() - secondsAgo * 1000);
+          const h = String(pointTime.getHours()).padStart(2, '0');
+          const m = String(pointTime.getMinutes()).padStart(2, '0');
+          const s = String(pointTime.getSeconds()).padStart(2, '0');
+          const timeStr = h + ':' + m + ':' + s;
+
+          // Tooltip box
+          let tooltipText = '[' + timeStr + ']';
+          this.sets.forEach(ds => { const d = S.h[ds.k]; if (d && d[this.hoveredIndex] != null) tooltipText += '\n' + ds.k + ': ' + d[this.hoveredIndex].toFixed(2); });
+
+          // Draw tooltip
+          const lines = tooltipText.split('\n');
+          const lineHeight = 12;
+          const boxW = Math.max(...lines.map(l => { ctx.font = '11px var(--mono)'; return ctx.measureText(l).width; })) + 12;
+          const boxH = lines.length * lineHeight + 8;
+          const x = (this.hoveredIndex / (dataLen - 1)) * W;
+          const boxX = Math.max(5, Math.min(W - boxW - 5, x - boxW / 2));
+          const boxY = 10;
+
+          ctx.fillStyle = 'rgba(4,10,18,0.95)'; ctx.fillRect(boxX, boxY, boxW, boxH);
+          ctx.strokeStyle = 'rgba(0,229,255,0.4)'; ctx.lineWidth = 1; ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+          ctx.fillStyle = 'rgba(0,229,255,0.9)'; ctx.font = 'bold 11px var(--mono)'; ctx.textAlign = 'left';
+          lines.forEach((line, i) => {
+            if (i === 0) { ctx.fillStyle = 'rgba(0,229,255,0.8)'; } else { ctx.fillStyle = 'rgba(144,202,249,0.8)'; }
+            ctx.fillText(line, boxX + 6, boxY + 2 + 12 + i * lineHeight);
+          });
+        }
+      }
+    }
+    let ch1, ch2;
+    function initCharts() {
+      ch1 = new Chart('ch1', [{ k: 'bz', c: '#ff1744', sc: 1 }, { k: 'speed', c: '#ffab00', sc: .1 }, { k: 'density', c: '#00e5ff', sc: 1 }, { k: 'SYMH', c: '#c084fc', sc: .33 }]);
+      ch2 = new Chart('ch2', [{ k: 'E', c: '#ffab00', sc: 3 }, { k: 'SYMH', c: '#ff1744', sc: .6 }]);
+    }
+
+    /* ═══ UI UPDATE ═══ */
+    const utc = () => {
+      const d = new Date();
+      const tr = new Date(d.getTime() + S.timeOffset + d.getTimezoneOffset() * 60000 + 3 * 3600000);
+      const h = String(tr.getHours()).padStart(2, '0');
+      const m = String(tr.getMinutes()).padStart(2, '0');
+      const s = String(tr.getSeconds()).padStart(2, '0');
+      return h + ':' + m + ':' + s;
+    };
+    const utcD = () => {
+      const d = new Date();
+      const tr = new Date(d.getTime() + S.timeOffset + d.getTimezoneOffset() * 60000 + 3 * 3600000);
+      const y = tr.getFullYear();
+      const mo = String(tr.getMonth() + 1).padStart(2, '0');
+      const day = String(tr.getDate()).padStart(2, '0');
+      return y + '/' + mo + '/' + day;
+    };
+    const g = id => document.getElementById(id);
+    const trd = k => { const a = S.h[k]; if (a.length < 3) return ''; const d = a[a.length - 1] - a[a.length - 3]; return (d > .5 ? '▲' : d < -.5 ? '▼' : '—') + ' ' + Math.abs(d).toFixed(1); };
+
+    function setMC(id, val, cls, bp, bc) {
+      const v = g('mv-' + id); if (!v) return; v.className = 'mv' + (cls ? ' ' + cls : ''); v.textContent = val;
+      const m = g('mc-' + id); if (m) m.className = 'mc' + (cls === 'crit' ? ' crit' : cls === 'warn' ? ' warn' : cls === 'good' ? ' good' : '');
+      const t = g('mt-' + id); if (t) t.textContent = trd(id);
+      const f = g('mf-' + id); if (f) { f.style.width = Math.min(100, Math.max(0, bp)) + '%'; if (bc) f.style.background = bc; }
+    }
+
+    function updateUI() {
+      /* BZ */
+      const bzC = S.bz < -20 ? 'crit' : S.bz < -10 ? 'warn' : S.bz > 5 ? 'good' : '';
+      const bn = g('bzn'); if (bn) { bn.className = 'bzn ' + (bzC === 'crit' ? 'neg' : bzC === 'warn' ? 'warn' : S.bz > 5 ? 'pos' : 'neu'); bn.style.color = bzC === 'crit' ? 'var(--red)' : bzC === 'warn' ? 'var(--amber)' : S.bz > 5 ? 'var(--green)' : 'var(--txt)'; bn.style.textShadow = bzC === 'crit' ? '0 0 25px rgba(255,23,68,.6)' : bzC === 'warn' ? '0 0 14px rgba(255,171,0,.4)' : 'none'; bn.textContent = S.bz.toFixed(1); }
+      const bt = g('bztg'); if (bt) bt.textContent = S.bz.toFixed(1) + ' nT';
+      const bsp = g('bzsp'); if (bsp && S.h.bz.length) { const rc = S.h.bz.slice(-40), mx = Math.max(10, ...rc.map(Math.abs)); bsp.innerHTML = rc.map(v => { const h = Math.max(2, Math.abs(v) / mx * 20); const c = v < -15 ? 'var(--red)' : v < -5 ? 'var(--amber)' : v > 5 ? 'var(--green)' : 'var(--bd2)'; return `<div class="bzbar" style="background:${c};height:${h}px"></div>`; }).join(''); }
+
+      /* Metric cards */
+      const sc = S.speed > 700 ? 'crit' : S.speed > 500 ? 'warn' : ''; setMC('speed', S.speed, sc, S.speed / 800 * 100, sc === 'crit' ? 'var(--red)' : 'var(--amber)');
+      const dc = S.density > 25 ? 'crit' : S.density > 15 ? 'warn' : ''; setMC('density', S.density.toFixed(1), dc, S.density / 30 * 100, dc === 'crit' ? 'var(--red)' : 'var(--cyan)');
+      setMC('T', S.T.toFixed(1), '', S.T / 20 * 100, '#ff6d00');
+      setMC('F', S.F.toFixed(1), 'cyan', S.F / 15 * 100, 'var(--cyan)');
+      const ec = S.E > 10 ? 'crit' : S.E > 5 ? 'warn' : ''; setMC('E', S.E.toFixed(2), ec, Math.abs(S.E) / 15 * 100, ec === 'crit' ? 'var(--red)' : 'var(--amber)');
+      const shc = S.SYMH < -100 ? 'crit' : S.SYMH < -50 ? 'warn' : S.SYMH > -30 ? 'good' : ''; setMC('SYMH', S.SYMH, shc, Math.abs(S.SYMH) / 150 * 100, shc === 'crit' ? 'var(--red)' : shc === 'warn' ? 'var(--amber)' : 'var(--cyan)');
+
+      /* G-scale */
+      const glElements = Array.from(document.querySelectorAll('.gl'));
+      const gLevelMap = [1, 3, 5];
+      glElements.forEach((e, i) => e.classList.toggle('on', S.gLevel >= gLevelMap[i]));
+      const gN = ['', 'KÜÇÜK', 'ORTA', 'GÜÇLÜ', 'ŞİDDETLİ', 'EKSTREM'];
+      const gF = ['var(--green)', '#64c800', 'var(--amber)', '#ff6d00', 'var(--red)'];
+      const gBg = ['rgba(0,230,118,.1)', 'rgba(100,200,0,.1)', 'rgba(255,171,0,.1)', 'rgba(255,109,0,.12)', 'rgba(255,23,68,.15)'];
+      const gBd = ['var(--grn2)', '#406000', 'var(--amb2)', '#803000', 'var(--red2)'];
+      const gb = g('gbdg'); if (gb) { if (S.gLevel === 0) { gb.textContent = 'G0 SAKİN'; gb.className = 'bdg blv'; } else { gb.textContent = `G${S.gLevel} ${gN[S.gLevel]}`; gb.style.cssText = `background:${gBg[S.gLevel - 1]};color:${gF[S.gLevel - 1]};border:1px solid ${gBd[S.gLevel - 1]}`; gb.className = 'bdg'; } }
+
+      /* HUD */
+      const kv = g('hkpv'); if (kv) { kv.textContent = S.kp.toFixed(1); g('hkp').className = 'hchip' + (S.kp >= 7 ? ' crit' : S.kp >= 5 ? ' warn' : ''); }
+      const dv = g('hdstv'); if (dv) { dv.textContent = S.dst + ' nT'; g('hdst').className = 'hchip' + (S.dst < -100 ? ' crit' : S.dst < -50 ? ' warn' : ''); }
+      const gv = g('hglevv'); if (gv) gv.textContent = S.gLevel === 0 ? 'G0 Sakin' : `G${S.gLevel} ${gN[S.gLevel]}`;
+      const av = g('haunl'); if (av) av.textContent = Math.round(Math.max(22, 67.5 - 4.4 * S.kp)) + '°N';
+
+      /* Header status */
+      const hs = g('hst'), ht = g('hstxt'); if (hs && ht) {
+        let hasStorm = false, hasWeak = false;
+        if (S.notifications && S.notifications.model_predictions) {
+          Object.values(S.notifications.model_predictions).forEach(p => {
+            if (p.class_name === 'Fırtına') hasStorm = true;
+            if (p.class_name === 'Zayıf') hasWeak = true;
+          });
+        }
+        if (hasStorm || S.gLevel >= 4) { hs.className = 'hst alert'; ht.textContent = `G${S.gLevel} UYARI`; }
+        else if (hasWeak || S.gLevel >= 2 || S.bz < -10) { hs.className = 'hst watch'; ht.textContent = 'AKTİF İZLEME'; }
+        else { hs.className = 'hst ok'; ht.textContent = 'NOMİNAL'; }
+      }
+
+      /* Right panel */
+      const sv = (id, v, c) => { const e = g(id); if (e) { e.textContent = v; if (c) e.className = 'sv2 ' + c; } };
+      sv('rkp', S.kp.toFixed(1), S.kp >= 7 ? 'crit' : S.kp >= 5 ? 'warn' : 'ok'); sv('rae', S.ae + ' nT', S.ae > 1000 ? 'crit' : S.ae > 500 ? 'warn' : ''); sv('rdst', S.dst + ' nT', S.dst < -100 ? 'crit' : S.dst < -50 ? 'warn' : ''); sv('ronset', S.kp >= 5 ? utc() : 'Yok', S.kp >= 5 ? 'warn' : ''); sv('rpeak', S.kp >= 5 ? `+6s ~Kp${S.kp.toFixed(1)}` : '--', S.kp >= 7 ? 'crit' : 'warn');
+      const efb = g('efbdg'); if (efb) { if (S.E > 10) { efb.textContent = 'KRİTİK'; efb.className = 'bdg bcr'; } else if (S.E > 5) { efb.textContent = 'YÜKSEK'; efb.className = 'bdg bwn'; } else { efb.textContent = 'NORMAL'; efb.className = 'bdg blv'; } }
+      if (S.h.E.length > 0) { const em = g('remax'), sm = g('rsmin'), km = g('rkpest'); if (em) em.textContent = Math.max(...S.h.E).toFixed(2) + ' mV/m'; if (sm) sm.textContent = Math.min(...S.h.SYMH) + ' nT'; if (km) km.textContent = S.kp.toFixed(1); }
+
+      /* Clock + solar */
+      const clk = g('hclk'), dt = g('hdat'), lp = g('lpoll'), lat = g('latency'), ch2t = g('ch2time');
+      if (clk) {
+        if (solarPaused && pausedTime) {
+          const tr = new Date(pausedTime.getTime() + pausedTime.getTimezoneOffset() * 60000 + 3 * 3600000);
+          const h = String(tr.getHours()).padStart(2, '0');
+          const m = String(tr.getMinutes()).padStart(2, '0');
+          const s = String(tr.getSeconds()).padStart(2, '0');
+          clk.textContent = h + ':' + m + ':' + s;
+        } else {
+          clk.textContent = utc();
+        }
+      }
+      if (dt) {
+        if (solarPaused && pausedTime) {
+          const tr = new Date(pausedTime.getTime() + pausedTime.getTimezoneOffset() * 60000 + 3 * 3600000);
+          const y = tr.getFullYear();
+          const mo = String(tr.getMonth() + 1).padStart(2, '0');
+          const day = String(tr.getDate()).padStart(2, '0');
+          dt.textContent = y + '/' + mo + '/' + day;
+        } else {
+          dt.textContent = utcD();
+        }
+      }
+      if (S.tick % 20 === 0) { const classes = ['A', 'B', 'B', 'B', 'C', 'C', 'M']; const xc = g('xrayc'); if (xc) { const cl = classes[Math.floor(Math.random() * 7)]; xc.textContent = cl + (Math.random() * 8.5 + .5).toFixed(1); xc.style.color = cl === 'M' ? 'var(--amber)' : cl === 'C' ? 'var(--cyan)' : 'var(--green)'; } const sc2 = g('sscnt'); if (sc2) sc2.textContent = Math.floor(70 + Math.random() * 40); const cc = g('cmecnt'); if (cc) cc.textContent = Math.floor(Math.random() * 4) + ' aktif'; }
+      const dp = g('dpcnt'); if (dp) dp.textContent = S.dpCount.toLocaleString() + ' pts';
+
+      /* Alerts */
+      const alerts = [];
+      if (S.notifications && S.notifications.model_predictions) {
+        const mp = S.notifications.model_predictions;
+        const preds = S.notifications.predictions;
+        Object.entries(mp).forEach(([h, pred]) => {
+          if (pred.class_name === 'Fırtına') {
+            const conf = (pred.confidence * 100).toFixed(0);
+            const reasons = preds[h] ? preds[h].reasons.join('. ') : ''; alerts.push({ t: 'crit', ti: `⚡ Fırtına Tahmini (${h})`, d: `LSTM: ${pred.class_name} (%${conf}). ${reasons}` });
+          } else if (pred.class_name === 'Zayıf') {
+            const conf = (pred.confidence * 100).toFixed(0);
+            const reasons = preds[h] ? preds[h].reasons.join('. ') : ''; alerts.push({ t: 'warn', ti: `⚠ Zayıf Fırtına (${h})`, d: `LSTM: ${pred.class_name} (%${conf}). ${reasons}` });
+          }
+        });
+      }
+      if (S.bz < THR.bz && S.speed > 550) alerts.push({ t: 'crit', ti: `⚡ KRİTİK: BZ ${S.bz.toFixed(1)} nT + ${S.speed} km/s`, d: `G${S.gLevel} fırtına. Aurora ~${Math.round(Math.max(22, 67.5 - 4.4 * S.kp))}°N.` });
+      else if (S.bz < -10) alerts.push({ t: 'crit', ti: `↓ BZ Güneye: ${S.bz.toFixed(1)} nT`, d: 'Güney bileşeni artıyor. Orta enlemlerde aurora olası.' });
+      if (S.speed > THR.speed) alerts.push({ t: 'warn', ti: `💨 Yüksek Hız: ${S.speed} km/s`, d: `Eşik (${THR.speed}) aşıldı. Uydu sürükleme olası.` });
+      if (S.SYMH < THR.symh) alerts.push({ t: 'warn', ti: `🧲 SYM-H: ${S.SYMH} nT`, d: `${S.SYMH < -100 ? 'Şiddetli' : 'Orta'} fırtına koşulları.` });
+      if (S.E > THR.efield) alerts.push({ t: 'warn', ti: `⚡ E-Alan: ${S.E.toFixed(2)} mV/m`, d: 'Manyetosferik konveksiyon artıyor.' });
+      if (!alerts.length) alerts.push({ t: 'info', ti: '✅ Tüm Parametreler Normal', d: `BZ=${S.bz.toFixed(1)} nT · Hız=${S.speed} km/s · Kp=${S.kp.toFixed(1)}` });
+      const al = g('allist'); if (al) al.innerHTML = alerts.map(a => `<div class="ai ${a.t}"><div class="ait">${a.ti}</div><div class="aid">${a.d}</div><div class="aitm">${utc()} TRT</div></div>`).join('');
+      const ab = g('albdg'); if (ab) { const cc = alerts.filter(a => a.t === 'crit').length; ab.textContent = cc ? `${cc} KRİTİK` : `${alerts.length} AKTIF`; ab.className = 'bdg ' + (cc ? 'bcr' : alerts[0].t === 'warn' ? 'bwn' : 'binf'); }
+    }
+
+    /* ═══ KP 27-DAY ═══ */
+    function renderK27() {
+      const c = g('k27bars'); if (!c) return;
+      c.innerHTML = S.kp27.map((k, i) => { const h = Math.max(3, k / 9 * 92); const col = k >= 7 ? 'var(--red)' : k >= 5 ? 'var(--amber)' : k >= 3 ? 'var(--cyan2)' : 'var(--bd2)'; return `<div class="k27bar" style="height:${h}px;background:${col}" title="Gün ${i + 1}: Kp ${k.toFixed(1)}"></div>`; }).join('');
+      const mx = Math.max(...S.kp27);[['k27max', mx.toFixed(1)], ['k27storms', S.kp27.filter(k => k >= 5).length], ['k27g5', S.kp27.filter(k => k >= 9).length], ['k27ssn', Math.floor(175 + Math.random() * 35)]].forEach(([id, v]) => { const e = g(id); if (e) e.textContent = v; });
+    }
+
+    /* ═══ TIMELINE ═══ */
+    function renderTL() {
+      const c = g('tllist'); if (!c) return;
+      if (!S.timelineData || !S.timelineData.storms || !S.timelineData.storms.length) {
+        c.innerHTML = '<div class="tlrow"><span class="tltag past">BİLGİ</span><span class="tltime">--</span><span class="tlttl">Veri bekleniyor...</span><span class="tldsc">Backend verisi yükleniyor</span></div>';
+        return;
+      }
+      const storms = S.timelineData.storms;
+      c.innerHTML = storms.map(s => {
+        const isOngoing = !!s.ongoing;
+        const tagClass = isOngoing ? 'now' : (s.class >= 2 ? 'crit' : 'past');
+        const tag = isOngoing ? 'AKTIF' : 'GEÇMİŞ';
+        const startTime = new Date(s.start).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+        const startDate = new Date(s.start).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' });
+        const title = isOngoing ? `⚡ ${s.classification} Fırtına (Devam Ediyor)` : `${s.classification} Fırtına`;
+        const desc = `Zirve: ${s.peak_sym_h} nT | Süre: ${s.duration_hours}s`;
+        return `<div class="tlrow"><span class="tltag ${tagClass}">${tag}</span><span class="tltime">${startDate} ${startTime}</span><span class="tlttl">${title}</span><span class="tldsc">${desc}</span></div>`;
+      }).join('');
+    }
+
+    /* ═══ TABS ═══ */
+    let curBP = null;
+    function toggleBP(id) { const p = g('bpanel'); document.querySelectorAll('.btab').forEach(e => e.classList.remove('active')); document.querySelectorAll('.tbtn').forEach(e => e.classList.remove('active')); if (curBP === id) { p.classList.remove('open'); curBP = null; return; } g('bt-' + id)?.classList.add('active'); g('tbtn-' + id)?.classList.add('active'); p.classList.add('open'); curBP = id; if (id === 'k27') renderK27(); if (id === 'tl') renderTL(); }
+    function htab(tab, btn) { document.querySelectorAll('.hbtn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); if (tab === 'timeline') toggleBP('tl'); else if (tab === 'settings') toggleBP('set'); else { g('bpanel')?.classList.remove('open'); curBP = null; document.querySelectorAll('.btab').forEach(e => e.classList.remove('active')); document.querySelectorAll('.tbtn').forEach(e => e.classList.remove('active')); } }
+
+    /* ═══ MAIN TICK ═══ */
+    function tick() { S.tick++; updateUI(); updateImpact(); if (ch1) ch1.draw(); if (ch2) ch2.draw(); }
+
+    /* ═══ INIT ═══ */
+    function init() {
+      setTimeout(() => {
+        initThree();
+        initCharts();
+        setTimeout(() => { if (ch1) ch1.rsz(); if (ch2) ch2.rsz(); }, 250);
+      }, 100);
+      startPolling();
+      renderTL(); tick(); setInterval(tick, 1000);
+    }
+    window.addEventListener('DOMContentLoaded', init);
+    window.addEventListener('resize', () => { if (ch1) ch1.rsz(); if (ch2) ch2.rsz(); if (!isMob()) closeMobSidebars(); });
+
+    // Drag-to-resize functionality - OPTIMIZED
+    let isDraggingLeft = false;
+    let isDraggingRight = false;
+    let startX, startLeftWidth, startRightWidth;
+    let dragRAF = null;
+    let pendingDragX = 0;
+    let dragMode = null;
+
+    const leftDrag = document.getElementById('leftDrag');
+    const rightDrag = document.getElementById('rightDrag');
+    const leftSidebar = document.querySelector('.sl');
+    const rightSidebar = document.querySelector('.sr');
+
+    function processDrag() {
+      dragRAF = null;
+      if (!isDraggingLeft && !isDraggingRight) return;
+      if (dragMode === 'left') {
+        const deltaX = pendingDragX - startX;
+        const newWidth = Math.max(0, startLeftWidth + deltaX);
+        leftSidebar.style.width = newWidth + 'px';
+      } else if (dragMode === 'right') {
+        const deltaX = startX - pendingDragX;
+        const newWidth = Math.max(0, startRightWidth + deltaX);
+        rightSidebar.style.width = newWidth + 'px';
+      }
+    }
+
+    leftDrag.addEventListener('mousedown', (e) => {
+      isDraggingLeft = true;
+      dragMode = 'left';
+      startX = e.clientX;
+      pendingDragX = e.clientX;
+      startLeftWidth = leftSidebar.offsetWidth;
+      document.body.style.cursor = 'ew-resize';
+      e.preventDefault();
+    }, false);
+
+    rightDrag.addEventListener('mousedown', (e) => {
+      isDraggingRight = true;
+      dragMode = 'right';
+      startX = e.clientX;
+      pendingDragX = e.clientX;
+      startRightWidth = rightSidebar.offsetWidth;
+      document.body.style.cursor = 'ew-resize';
+      e.preventDefault();
+    }, false);
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDraggingLeft && !isDraggingRight) return;
+      pendingDragX = e.clientX;
+      if (!dragRAF) dragRAF = requestAnimationFrame(processDrag);
+    }, { passive: true });
+
+    document.addEventListener('mouseup', () => {
+      isDraggingLeft = false;
+      isDraggingRight = false;
+      dragMode = null;
+      document.body.style.cursor = '';
+      if (dragRAF) {
+        cancelAnimationFrame(dragRAF);
+        dragRAF = null;
+      }
+      updateToggles();
+      if (window.ch1) ch1.rsz();
+      if (window.ch2) ch2.rsz();
+    }, false);
+
+    // Toggle functions - OPTIMIZED
+    let lastLeftState = null;
+    let lastRightState = null;
+
+    function updateToggles() {
+      const leftWidth = leftSidebar.offsetWidth;
+      const rightWidth = rightSidebar.offsetWidth;
+      const leftClosed = leftWidth === 0;
+      const rightClosed = rightWidth === 0;
+
+      if (lastLeftState !== leftClosed) {
+        lastLeftState = leftClosed;
+        document.getElementById('toggleLeft').style.opacity = leftClosed ? '1' : '0';
+      }
+      if (lastRightState !== rightClosed) {
+        lastRightState = rightClosed;
+        document.getElementById('toggleRight').style.opacity = rightClosed ? '1' : '0';
+      }
+    }
+
+    // ─── Mobile sidebar logic ───────────────────────────────────────────────────
+    const mobOverlay = document.getElementById('mobOverlay');
+
+    function isMob() { return window.innerWidth <= 900; }
+
+    function closeMobSidebars() {
+      leftSidebar.classList.remove('mob-open');
+      rightSidebar.classList.remove('mob-open');
+      if (mobOverlay) mobOverlay.classList.remove('active');
+    }
+
+    if (mobOverlay) {
+      mobOverlay.addEventListener('click', closeMobSidebars, false);
+    }
+
+    document.getElementById('toggleLeft').addEventListener('click', () => {
+      if (isMob()) {
+        const isOpen = leftSidebar.classList.contains('mob-open');
+        closeMobSidebars();
+        if (!isOpen) {
+          leftSidebar.classList.add('mob-open');
+          if (mobOverlay) mobOverlay.classList.add('active');
+        }
+      } else {
+        leftSidebar.style.width = '190px';
+        updateToggles();
+      }
+    }, false);
+
+    document.getElementById('toggleRight').addEventListener('click', () => {
+      if (isMob()) {
+        const isOpen = rightSidebar.classList.contains('mob-open');
+        closeMobSidebars();
+        if (!isOpen) {
+          rightSidebar.classList.add('mob-open');
+          if (mobOverlay) mobOverlay.classList.add('active');
+        }
+      } else {
+        rightSidebar.style.width = '268px';
+        updateToggles();
+      }
+    }, false);
+
+    // Initial update
+    updateToggles();
+  </script>
+</body>
+
+</html>

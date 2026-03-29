@@ -1,0 +1,16 @@
+# Virtual Environment
+venv/
+env/
+.env
+
+# Python caching
+__pycache__/
+*.pyc
+*.pyo
+
+# Local Data files (to prevent committing huge data files / hitting HAPI bounds)
+data.json
+backend/data.json
+data_test.json
+preprocessed_data.csv
+preprocessed_data_test.csv
